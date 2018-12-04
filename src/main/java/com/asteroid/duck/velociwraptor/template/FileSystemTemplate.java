@@ -10,6 +10,7 @@ import javax.json.JsonReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
@@ -29,7 +30,7 @@ public class FileSystemTemplate implements Template {
 
         @Override
         public InputStream rawContent() throws IOException {
-            return Files.newInputStream(path, null);
+            return Files.newInputStream(path);
         }
     }
 
@@ -48,14 +49,14 @@ public class FileSystemTemplate implements Template {
         @Override
         public Stream<File> childFiles() throws IOException {
             return Files.list(path)
-                    .filter(Files::isDirectory)
+                    .filter(Files::isRegularFile)
                     .map(child -> new FsFile(child));
         }
 
         @Override
         public Stream<Directory> childDirs() throws IOException {
             return Files.list(path)
-                    .filter(child -> ! Files.isDirectory(child, null))
+                    .filter(Files::isDirectory)
                     .map(child -> new FsDirectory(child) );
         }
     }
