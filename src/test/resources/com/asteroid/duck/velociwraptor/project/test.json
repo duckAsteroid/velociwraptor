@@ -1,0 +1,14 @@
+{
+  "Name": "example-project",
+  "Description": "An example project",
+  "Org": "com.asteroid.duck",
+  "Version": "1.0.0",
+  "Author": "Chris Senior",
+  "Year": 2018,
+  "Fraction": 3.14,
+  "License": [
+    "MIT",
+    "GNU GPL v3.0",
+    "Apache Software License 2.0"
+  ]
+}
