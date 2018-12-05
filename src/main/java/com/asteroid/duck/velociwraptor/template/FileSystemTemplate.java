@@ -43,7 +43,7 @@ public class FileSystemTemplate implements Template {
 
         @Override
         public String rawName() {
-            return path.getFileName().toString();
+            return path.getFileName().toString().replace("/", "");
         }
 
         @Override
