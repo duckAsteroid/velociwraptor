@@ -5,6 +5,7 @@ import com.asteroid.duck.velociwraptor.project.UserInteractive;
 import com.asteroid.duck.velociwraptor.template.FileSystemTemplate;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,14 +18,27 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 /**
  * Entry point for command line
  */
 public class Main {
     /**
+     * Logger (SLF4J)
+     */
+    private static final Logger LOG = getLogger(Main.class);
+
+    /**
      * Current version of this application
      */
     public static final String VERSION = loadVersionFromProperties();
+
+    private static final char DIR = 'd';
+    private static final char ZIP = 'z';
+    private static final char MAVEN = 'm';
+    private static final char GITHUB = 'g';
+    private static final char OUT = 'o';
 
     private static String loadVersionFromProperties() {
         try {
@@ -54,39 +68,45 @@ public class Main {
     private static final Options options() {
         Options options = new Options();
 
-        Option disableInteractive = Option.builder().argName("q").longOpt("quiet")
+        Option disableInteractive = Option.builder("q").longOpt("quiet")
                 .desc("Disable interactive mode")
                 .build();
 
         options.addOption(disableInteractive);
 
-        Option repo = Option.builder().argName("r").longOpt("repo")
+        Option repo = Option.builder("r").longOpt("repo")
                 .desc("URI to maven or github repo when using those template sources")
                 .hasArg(true).argName("URI").optionalArg(false)
                 .build();
         options.addOption(repo);
 
+        Option zipRoot = Option.builder("i").longOpt("zip-root")
+                .desc("path to template root inside ZIP/JAR")
+                .hasArg(true).argName("PATH").optionalArg(false)
+                .build();
+        options.addOption(zipRoot);
+
         OptionGroup template = new OptionGroup();
         template.setRequired(true);
-        Option dir = Option.builder().argName("d").longOpt("dir")
+        Option dir = Option.builder(opt(DIR)).longOpt("dir")
                 .desc("Use a local directory <DIR> as template")
                 .hasArg(true).argName("DIR").optionalArg(false)
                 .build();
         template.addOption(dir);
 
-        Option zip = Option.builder().argName("z").longOpt("zip")
+        Option zip = Option.builder(opt(ZIP)).longOpt("zip")
                 .desc("Use a ZIP file (local file/public web URI) as a template")
                 .hasArg(true).argName("URI").optionalArg(false)
                 .build();
         template.addOption(zip);
 
-        Option mvn = Option.builder().argName("m").longOpt("mvn")
+        Option mvn = Option.builder(opt(MAVEN)).longOpt("mvn")
                 .desc("Use a maven artefact (JAR) as a template. Use maven ':' separated coordinate syntax - see [1], [2].")
                 .hasArg(true).argName("MVN").valueSeparator(':').optionalArg(false)
                 .build();
         template.addOption(mvn);
 
-        Option github = Option.builder().argName("g").longOpt("github")
+        Option github = Option.builder(opt(GITHUB)).longOpt("github")
                 .desc("Use a GitHub repo as the template. Repository is defined as {user}/{repo}/{branch} (branch optional). See [1]")
                 .hasArg(true).argName("REPO").valueSeparator('/').optionalArg(false)
                 .build();
@@ -94,13 +114,17 @@ public class Main {
 
         options.addOptionGroup(template);
 
-        Option target = Option.builder().argName("o").longOpt("output")
+        Option target = Option.builder(opt(OUT)).longOpt("output")
                 .desc("Target directory for template output")
                 .hasArg(true).argName("OUT").optionalArg(false)
                 .build();
         options.addOption(target);
 
         return options;
+    }
+
+    private static String opt(char c) {
+        return new String(new char[] {c});
     }
 
 
@@ -114,35 +138,40 @@ public class Main {
             // create an interactive user if needed
             try (UserInteractive interactive = commandLine.hasOption('q') ? null : UserInteractive.console()) {
                 // optional remote repository name (see later)
-                Optional<String> repo = Optional.of(commandLine.getOptionValue('r'));
-
+                Optional<String> repo = Optional.ofNullable(commandLine.getOptionValue('r'));
+                // zip root (see later)
+                Optional<String> zipRoot = Optional.ofNullable(commandLine.getOptionValue('i'));
                 // output directory (if specified - else CWD)
-                String target = commandLine.getOptionValue('o');
+                String target = commandLine.getOptionValue(OUT);
                 final File targetDir = target == null ? currentWorkingDir : new File(target);
 
                 // create a template
                 Template template= null;
-                if (commandLine.hasOption('d')) {
+                if (commandLine.hasOption(DIR)) {
                     // using local directory
-                    Path path = Paths.get(commandLine.getOptionValue('d'));
+                    Path path = Paths.get(commandLine.getOptionValue(DIR));
                     template = new FileSystemTemplate(path);
                 }
-                else if (commandLine.hasOption('z')) {
+                else if (commandLine.hasOption(ZIP)) {
                     // ZIP (local or remote)
-                    URI path = URI.create(commandLine.getOptionValue('d'));
+                    URI path = URI.create(commandLine.getOptionValue(ZIP));
+                    LOG.debug("ZIP template URI="+path);
                     if (!path.isAbsolute()) {
                         path = currentWorkingDir.toURI().resolve(path);
                     }
+                    LOG.debug("Resolved to "+path);
                     if (!path.getScheme().equals("file")) {
+                        LOG.debug("Downloading remote ZIP");
                         path = downloadAndMakeLocal(path);
+                        LOG.debug("Using local cache "+path);
                     }
-                    template = fromZip(path);
+                    template = fromZip(path, zipRoot.orElse("."));
                 }
-                else if (commandLine.hasOption('m')) {
+                else if (commandLine.hasOption(MAVEN)) {
                     // maven repository coords
                     // e.g. com.google.auto.value:auto-value-annotations:1.6.3rc2
                     // http://central.maven.org/maven2/com/google/auto/value/auto-value-annotations/1.6.3rc2/auto-value-annotations-1.6.3rc2.jar
-                    final String[] mavenCoords = commandLine.getOptionValues('m');
+                    final String[] mavenCoords = commandLine.getOptionValues(MAVEN);
                     final String groupId = mavenCoords[0].replace('.', '/');
                     final String artifactId = mavenCoords[1];
                     final String version = mavenCoords[2];
@@ -152,13 +181,13 @@ public class Main {
                     URI uri = baseUri.resolve(path);
 
                     URI local = downloadAndMakeLocal(uri);
-                    template = fromZip(local);
+                    template = fromZip(local, zipRoot.orElse("."));
                 }
-                else if (commandLine.hasOption('g')) {
+                else if (commandLine.hasOption(GITHUB)) {
                     // github repository
                     // e.g. duckAsteroid/velociwraptor/template
                     // https://github.com/duckAsteroid/velociwraptor/archive/template.zip
-                    final String[] githubCoords = commandLine.getOptionValues('m');
+                    final String[] githubCoords = commandLine.getOptionValues(GITHUB);
                     final String owner = githubCoords[0];
                     final String repository = githubCoords[1];
                     final String branch = (githubCoords.length >= 2) ? githubCoords[2] : "master";
@@ -168,7 +197,7 @@ public class Main {
                     URI uri = baseUri.resolve(path);
 
                     URI local = downloadAndMakeLocal(uri);
-                    template = fromZip(local);
+                    template = fromZip(local, zipRoot.orElse(repository+"-"+branch));
                 }
 
                 // if we have a template - create a session
@@ -188,14 +217,16 @@ public class Main {
         }
     }
 
-    private static Template fromZip(URI path) throws IOException {
-        FileSystem zipFileSystem = FileSystems.newFileSystem(path, Collections.emptyMap());
-        Path zipRoot = zipFileSystem.getPath(".");
+    private static Template fromZip(URI uri, String root) throws IOException {
+        Path path = Paths.get(uri);
+        FileSystem zipFileSystem = FileSystems.newFileSystem(path, Main.class.getClassLoader());
+        Path zipRoot = zipFileSystem.getPath(root);
         return new FileSystemTemplate(zipRoot);
     }
 
     private static URI downloadAndMakeLocal(URI path) throws IOException {
-        File tempDirectory = FileUtils.getTempDirectory();
+        File tempDirectory = new File(FileUtils.getTempDirectory(), "velociwraptor-cache");
+        tempDirectory.mkdirs();
         String urlPath = path.getPath();
         String filename = urlPath.substring(urlPath.lastIndexOf('/'));
         File tempFile = new File(tempDirectory, filename);
