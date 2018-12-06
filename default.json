@@ -6,5 +6,6 @@
      "Brick", "Wood", "Straw"
     ],
    "File": "injected",
-   "Dir": "abc"
+   "Dir": "abc",
+   "Condition": true
 }
