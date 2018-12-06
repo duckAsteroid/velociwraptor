@@ -7,6 +7,40 @@ Template engine used is [JMTE][https://github.com/DJCordhose/jmte]
 Getting Started
 ---------------
 
+Usage
+-------
+```text
+Velociwraptor v0.0.1
+usage: Main [-q] [-r <URI>] [-i <PATH>] [-c] -d <DIR> | -z <URI> | -m
+       <MVN> | -g <REPO>    [-o <OUT>] [-p] [-e] [-j <JSON>]
+ -q,--quiet             Disable interactive mode
+ -r,--repo <URI>        URI to maven or github repo when using those
+                        template sources
+ -i,--zip-root <PATH>   path to template root inside ZIP/JAR
+ -c,--retain            Retain any cached downloads of ZIP/JAR files
+ -d,--dir <DIR>         Use a local directory <DIR> as template
+ -z,--zip <URI>         Use a ZIP file (local file/public web URI) as a
+                        template
+ -m,--mvn <MVN>         Use a maven artefact (JAR) as a template. Use
+                        maven ':' separated coordinate syntax - see [1],
+                        [2].
+ -g,--github <REPO>     Use a GitHub repo as the template. Repository is
+                        defined as {user}/{repo}/{branch} (branch
+                        optional). See [1]
+ -o,--output <OUT>      Target directory for template output
+ -p,--properties        Use system properties to resolve template
+                        variables
+ -e,--env               Use system ENVIRONMENT to resolve template
+                        variables
+ -j,--json <JSON>       Use JSON file(s) to resolve template variables. If
+                        a list, filenames are separated by ';'.Relative
+                        paths are resolved based on current working dir
+
+[1] - Non standard repository URI may be specified with the --repo option.
+[2] - https://maven.apache.org/pom.html#Maven_Coordinates
+```
+
+
 Templates
 -------
 Velociwraptor will use templates from many places including:
