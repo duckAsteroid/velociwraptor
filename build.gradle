@@ -1,3 +1,11 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.palantir.graal:gradle-graal:0.2.0"
+    }
+}
 plugins {
     id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
@@ -53,3 +61,11 @@ task generatePropInfo {
     }
 }
 sourceSets.main.output.dir genOutputDir, builtBy: generatePropInfo
+
+apply plugin: 'com.palantir.graal'
+
+graal {
+    mainClass "${mainClassName}"
+    outputName "velociwraptor"
+    graalVersion '1.0.0-rc5'
+}
