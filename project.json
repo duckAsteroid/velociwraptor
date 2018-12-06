@@ -1,1 +1,8 @@
-{ "Name": "Test"}
+{ 
+   "Name": "Three little pigs",
+   "Wolf": "Let me in",
+   "Pig": "Not by the hair on my chinny chin chin",
+   "Material": [
+     "Brick", "Wood", "Straw"
+    ]
+}
