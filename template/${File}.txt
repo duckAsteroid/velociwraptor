@@ -1,2 +1,2 @@
 This is a test in the root.
-It is made of ${Option}
+It is made of ${Material}
