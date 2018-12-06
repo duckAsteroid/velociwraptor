@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 import static org.junit.Assert.*;
 
 public class JsonContextTest {
-
+/*
     private JsonContext subject;
 
     @Before
@@ -59,4 +59,5 @@ public class JsonContextTest {
         subject.remove("Test");
         assertFalse(subject.containsKey("Test"));
     }
+    */
 }

@@ -1,11 +1,15 @@
 plugins {
-    id 'net.ltgt.apt' version '0.10'
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
 }
 
 group = 'com.asteroid.duck'
 version = '0.0.1'
 
 apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+mainClassName = 'com.asteroid.duck.velociwraptor.Main'
 
 repositories {
     mavenCentral()
@@ -13,12 +17,11 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.2'
-    apt 'org.projectlombok:lombok:1.18.2'
     
-    compile group: 'org.apache.velocity', name: 'velocity-engine-core', version: '2.0'
+    compile group: 'com.floreysoft', name: 'jmte', version: '5.0.0'
     compile 'javax.json:javax.json-api:1.0'
     compile 'org.fusesource.jansi:jansi:1.17.1'
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     
@@ -26,7 +29,20 @@ dependencies {
 
     testCompile 'junit:junit:4.11'
     testCompile 'org.mockito:mockito-all:1.10.19'
-    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
-
+    
+    testCompile 'com.sparkjava:spark-core:2.7.2'
+    
     testRuntime 'ch.qos.logback:logback-classic:1.2.3'
 }
+
+ext.genOutputDir = file("$buildDir/generated-resources")
+
+task generatePropInfo {
+    ext.outputFile = file("$genOutputDir/project-info.properties")
+    outputs.file(outputFile)
+    doLast {
+        outputFile.text = "version=${project.version}"
+    }
+}
+
+sourceSets.main.output.dir genOutputDir, builtBy: generatePropInfo

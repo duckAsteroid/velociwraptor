@@ -12,10 +12,11 @@ Download
 
 TO DO 
 -------
+* Override local project.json with one from the command line
+
 * Main class with args to run generator
     * Pass in the template as a DIR/ZIP/Git
     * (optional) give a working DIR for the output
-* Parse the `project.json` into velocity context
 * Walk the template and write to target 
     * Use a marker file to control directory/folder creation (i.e. omit/include files/directories)
     * Allow inclusion of other templates (versioning?)

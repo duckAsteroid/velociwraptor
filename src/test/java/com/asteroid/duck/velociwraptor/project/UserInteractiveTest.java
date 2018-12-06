@@ -39,7 +39,7 @@ public class UserInteractiveTest {
         InputStream stream = UserInteractiveTest.class.getResourceAsStream("askOption1.bin");
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintWriter printWriter = new PrintWriter(baos, true)) {
+        try (PrintStream printWriter = new PrintStream(baos, true)) {
             subject = new UserInteractive(wrap("980", "-5", "0", "wibble", "2"), printWriter);
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
             arrayBuilder.add("One");
@@ -48,8 +48,8 @@ public class UserInteractiveTest {
 
             Object result = subject.askOption("Key", arrayBuilder.build());
             assertNotNull(result);
-            assertTrue(result instanceof String);
-            assertEquals("Two", result);
+            assertTrue(result instanceof JsonString);
+            assertEquals("Two", ((JsonString)result).getString());
 
 
 
@@ -65,7 +65,7 @@ public class UserInteractiveTest {
         InputStream stream = UserInteractiveTest.class.getResourceAsStream("askOption2.bin");
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintWriter printWriter = new PrintWriter(baos, true)) {
+        try (PrintStream printWriter = new PrintStream(baos, true)) {
             subject = new UserInteractive(wrap(""), printWriter);
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
             arrayBuilder.add("One");
@@ -74,8 +74,8 @@ public class UserInteractiveTest {
 
             Object result = subject.askOption("Key", arrayBuilder.build());
             assertNotNull(result);
-            assertTrue(result instanceof String);
-            assertEquals("One", result);
+            assertTrue(result instanceof JsonString);
+            assertEquals("One", ((JsonString)result).getString());
 
             printWriter.flush();
             //FileUtils.writeByteArrayToFile(new File("temp.bin"), baos.toByteArray());
@@ -92,7 +92,7 @@ public class UserInteractiveTest {
         InputStream stream = UserInteractiveTest.class.getResourceAsStream("askForDefault.bin");
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintWriter printWriter = new PrintWriter(baos, true)) {
+        try (PrintStream printWriter = new PrintStream(baos, true)) {
             subject = new UserInteractive(wrap(""), printWriter);
 
             Object result = subject.askFor("Key", "Default");
@@ -111,7 +111,7 @@ public class UserInteractiveTest {
         InputStream stream = UserInteractiveTest.class.getResourceAsStream("askFor.bin");
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintWriter printWriter = new PrintWriter(baos, true)) {
+        try (PrintStream printWriter = new PrintStream(baos, true)) {
             subject = new UserInteractive(wrap("wibble"), printWriter);
 
             Object result = subject.askFor("Key", "Current");

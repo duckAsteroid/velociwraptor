@@ -10,12 +10,20 @@ import javax.json.JsonReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+/**
+ * The class provides a {@link Template} view of the resources in a given root {@link Path}.
+ * The root is expected to contain a project file named <code>project.json</code> and a folder
+ * called <code>template</code> containing the actual template files.
+ *
+ * This path can be a local file system directory or a path in a ZipFileSystem.
+ */
 public class FileSystemTemplate implements Template {
-
+    /**
+     * Provides a {@link File} model for a path
+     */
     static class FsFile implements File {
         private final Path path;
 
@@ -34,6 +42,9 @@ public class FileSystemTemplate implements Template {
         }
     }
 
+    /**
+     * Provides a {@link Directory} model of a path
+     */
     static class FsDirectory implements Directory {
         private final Path path;
 
@@ -43,6 +54,7 @@ public class FileSystemTemplate implements Template {
 
         @Override
         public String rawName() {
+            // need to trim '/' from ZIP paths...
             return path.getFileName().toString().replace("/", "");
         }
 
@@ -61,8 +73,13 @@ public class FileSystemTemplate implements Template {
         }
     }
 
-
+    /**
+     * The root directory containing the actual template
+     */
     private final FsDirectory template;
+    /**
+     * The JSON data from the 'project.json' file
+     */
     private final JsonObject projectSettings;
 
     public FileSystemTemplate(Path root) throws IOException {
