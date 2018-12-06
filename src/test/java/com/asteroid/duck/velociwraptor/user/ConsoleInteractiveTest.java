@@ -118,7 +118,7 @@ public class ConsoleInteractiveTest {
             assertEquals("wibble", result);
 
             printWriter.flush();
-            FileUtils.writeByteArrayToFile(new File("temp.bin"), baos.toByteArray());
+            //FileUtils.writeByteArrayToFile(new File("temp.bin"), baos.toByteArray());
             assertArrayEquals(expected, baos.toByteArray());
         }
     }

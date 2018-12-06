@@ -86,6 +86,11 @@ public class Main {
                 .build();
         options.addOption(zipRoot);
 
+        Option retainCache = Option.builder("c").longOpt("retain")
+                .desc("Retain any cached downloads of ZIP/JAR files")
+                .build();
+        options.addOption(retainCache);
+
         OptionGroup template = new OptionGroup();
         template.setRequired(true);
         Option dir = Option.builder(opt(DIR)).longOpt("dir")
@@ -102,13 +107,13 @@ public class Main {
 
         Option mvn = Option.builder(opt(MAVEN)).longOpt("mvn")
                 .desc("Use a maven artefact (JAR) as a template. Use maven ':' separated coordinate syntax - see [1], [2].")
-                .hasArg(true).argName("MVN").valueSeparator(':').optionalArg(false)
+                .hasArg(true).argName("MVN").optionalArg(false)
                 .build();
         template.addOption(mvn);
 
         Option github = Option.builder(opt(GITHUB)).longOpt("github")
                 .desc("Use a GitHub repo as the template. Repository is defined as {user}/{repo}/{branch} (branch optional). See [1]")
-                .hasArg(true).argName("REPO").valueSeparator('/').optionalArg(false)
+                .hasArg(true).argName("REPO").optionalArg(false)
                 .build();
         template.addOption(github);
 
@@ -141,6 +146,8 @@ public class Main {
                 Optional<String> repo = Optional.ofNullable(commandLine.getOptionValue('r'));
                 // zip root (see later)
                 Optional<String> zipRoot = Optional.ofNullable(commandLine.getOptionValue('i'));
+                // retain cached ZIPs
+                boolean retainCache = commandLine.hasOption('c');
                 // output directory (if specified - else CWD)
                 String target = commandLine.getOptionValue(OUT);
                 final File targetDir = target == null ? currentWorkingDir : new File(target);
@@ -162,7 +169,7 @@ public class Main {
                     LOG.debug("Resolved to "+path);
                     if (!path.getScheme().equals("file")) {
                         LOG.debug("Downloading remote ZIP");
-                        path = downloadAndMakeLocal(path);
+                        path = downloadAndMakeLocal(path, retainCache);
                         LOG.debug("Using local cache "+path);
                     }
                     template = fromZip(path, zipRoot.orElse("."));
@@ -171,7 +178,7 @@ public class Main {
                     // maven repository coords
                     // e.g. com.google.auto.value:auto-value-annotations:1.6.3rc2
                     // http://central.maven.org/maven2/com/google/auto/value/auto-value-annotations/1.6.3rc2/auto-value-annotations-1.6.3rc2.jar
-                    final String[] mavenCoords = commandLine.getOptionValues(MAVEN);
+                    final String[] mavenCoords = commandLine.getOptionValue(MAVEN).split(":");
                     final String groupId = mavenCoords[0].replace('.', '/');
                     final String artifactId = mavenCoords[1];
                     final String version = mavenCoords[2];
@@ -180,23 +187,23 @@ public class Main {
                     URI path = URI.create(groupId + "/" + artifactId +"/" + version + "/" + artifactId + "-"+version +".jar");
                     URI uri = baseUri.resolve(path);
 
-                    URI local = downloadAndMakeLocal(uri);
+                    URI local = downloadAndMakeLocal(uri, retainCache);
                     template = fromZip(local, zipRoot.orElse("."));
                 }
                 else if (commandLine.hasOption(GITHUB)) {
                     // github repository
                     // e.g. duckAsteroid/velociwraptor/template
                     // https://github.com/duckAsteroid/velociwraptor/archive/template.zip
-                    final String[] githubCoords = commandLine.getOptionValues(GITHUB);
+                    final String[] githubCoords = commandLine.getOptionValue(GITHUB).split("\\/");
                     final String owner = githubCoords[0];
                     final String repository = githubCoords[1];
-                    final String branch = (githubCoords.length >= 2) ? githubCoords[2] : "master";
+                    final String branch = (githubCoords.length > 1) ? githubCoords[2] : "master";
                     // base URI
                     URI baseUri = URI.create(repo.orElse("https://github.com/"));
                     URI path = URI.create(owner + "/" + repository +"/archive/"+branch +".zip");
                     URI uri = baseUri.resolve(path);
 
-                    URI local = downloadAndMakeLocal(uri);
+                    URI local = downloadAndMakeLocal(uri, retainCache);
                     template = fromZip(local, zipRoot.orElse(repository+"-"+branch));
                 }
 
@@ -212,8 +219,8 @@ public class Main {
             }
         }
         catch (IOException | ParseException e) {
-            //System.err.println(e.getMessage());
             doHelp(options);
+            throw new RuntimeException(e);
         }
     }
 
@@ -224,14 +231,20 @@ public class Main {
         return new FileSystemTemplate(zipRoot);
     }
 
-    private static URI downloadAndMakeLocal(URI path) throws IOException {
+    private static URI downloadAndMakeLocal(URI path, boolean retainCache) throws IOException {
         File tempDirectory = new File(FileUtils.getTempDirectory(), "velociwraptor-cache");
         tempDirectory.mkdirs();
         String urlPath = path.getPath();
-        String filename = urlPath.substring(urlPath.lastIndexOf('/'));
+        String filename = urlPath.substring(urlPath.lastIndexOf('/') + 1);
+        if (filename.endsWith(".jar")) {
+            filename += ".zip";
+        }
         File tempFile = new File(tempDirectory, filename);
-        FileUtils.forceDeleteOnExit(tempFile);
+        if (!retainCache) {
+            FileUtils.forceDeleteOnExit(tempFile);
+        }
         FileUtils.copyURLToFile(path.toURL(), tempFile);
+        LOG.trace("Downloaded "+tempFile.getCanonicalPath());
         return tempFile.toURI();
     }
 
