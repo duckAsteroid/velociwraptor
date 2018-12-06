@@ -1,3 +1,3 @@
-This is just
-a test.
+This is just a test.
+It features the story of ${Name}.
 Do not be alarmed!
