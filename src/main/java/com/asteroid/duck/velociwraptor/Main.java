@@ -1,16 +1,22 @@
 package com.asteroid.duck.velociwraptor;
 
-import com.asteroid.duck.velociwraptor.model.Template;
+import com.asteroid.duck.velociwraptor.model.JsonTemplateData;
+import com.asteroid.duck.velociwraptor.model.TemplateData;
+import com.asteroid.duck.velociwraptor.template.Template;
 import com.asteroid.duck.velociwraptor.user.ConsoleInteractive;
 import com.asteroid.duck.velociwraptor.user.UserInteractive;
-import com.asteroid.duck.velociwraptor.template.FileSystemTemplate;
+import com.asteroid.duck.velociwraptor.template.fs.FileSystemTemplate;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -37,6 +43,13 @@ public class Main {
     private static final char MAVEN = 'm';
     private static final char GITHUB = 'g';
     private static final char OUT = 'o';
+    private static final char SYS_PROPS = 'p';
+    private static final char ENV = 'e';
+    private static final char JSON = 'j';
+    private static final char REPO = 'r';
+    private static final char QUIET = 'q';
+    private static final char ZIP_ROOT = 'i';
+    private static final char CACHE = 'c';
 
     private static String loadVersionFromProperties() {
         try {
@@ -66,25 +79,25 @@ public class Main {
     private static final Options options() {
         Options options = new Options();
 
-        Option disableInteractive = Option.builder("q").longOpt("quiet")
+        Option disableInteractive = Option.builder(opt(QUIET)).longOpt("quiet")
                 .desc("Disable interactive mode")
                 .build();
 
         options.addOption(disableInteractive);
 
-        Option repo = Option.builder("r").longOpt("repo")
+        Option repo = Option.builder(opt(REPO)).longOpt("repo")
                 .desc("URI to maven or github repo when using those template sources")
                 .hasArg(true).argName("URI").optionalArg(false)
                 .build();
         options.addOption(repo);
 
-        Option zipRoot = Option.builder("i").longOpt("zip-root")
+        Option zipRoot = Option.builder(opt(ZIP_ROOT)).longOpt("zip-root")
                 .desc("path to template root inside ZIP/JAR")
                 .hasArg(true).argName("PATH").optionalArg(false)
                 .build();
         options.addOption(zipRoot);
 
-        Option retainCache = Option.builder("c").longOpt("retain")
+        Option retainCache = Option.builder(opt(CACHE)).longOpt("retain")
                 .desc("Retain any cached downloads of ZIP/JAR files")
                 .build();
         options.addOption(retainCache);
@@ -123,6 +136,23 @@ public class Main {
                 .build();
         options.addOption(target);
 
+        Option sysProps = Option.builder(opt(SYS_PROPS)).longOpt("properties")
+                .desc("Use system properties to resolve template variables")
+                .build();
+        options.addOption(sysProps);
+
+        Option env = Option.builder(opt(ENV)).longOpt("env")
+                .desc("Use system ENVIRONMENT to resolve template variables")
+                .build();
+        options.addOption(env);
+
+        Option userJson = Option.builder(opt(JSON)).longOpt("json")
+                .desc("Use JSON file(s) to resolve template variables. If a list, filenames are separated by ';'." +
+                        "Relative paths are resolved based on current working dir")
+                .hasArg(true).argName("JSON")
+                .build();
+        options.addOption(userJson);
+
         return options;
     }
 
@@ -139,7 +169,7 @@ public class Main {
             final File currentWorkingDir = new File(".");
             CommandLine commandLine = parser.parse(options, args);
             // create an interactive user if needed
-            try (UserInteractive interactive = commandLine.hasOption('q') ? null : ConsoleInteractive.console()) {
+            try (UserInteractive interactive = commandLine.hasOption('q') ? UserInteractive.nullInteractive() : ConsoleInteractive.console()) {
                 // optional remote repository name (see later)
                 Optional<String> repo = Optional.ofNullable(commandLine.getOptionValue('r'));
                 // zip root (see later)
@@ -207,7 +237,28 @@ public class Main {
 
                 // if we have a template - create a session
                 if (template != null) {
-                    Session session = new Session(template, targetDir, interactive);
+                    // do we need to setup some delegates
+                    TemplateData templateData = null;
+                    if (commandLine.hasOption(SYS_PROPS)) {
+                        templateData = TemplateData.systemProperties(templateData);
+                    }
+                    if (commandLine.hasOption(ENV)) {
+                        templateData = TemplateData.systemEnvironment(templateData);
+                    }
+                    if (commandLine.hasOption(JSON)) {
+                        String[] jsonFiles = commandLine.getOptionValue(JSON).split(";");
+                        for (String json : jsonFiles) {
+                            Path jsonPath = Paths.get(json);
+                            JsonReader reader = Json.createReader(Files.newBufferedReader(jsonPath));
+                            templateData = new JsonTemplateData(null, templateData, reader.readObject(), interactive);
+                        }
+                    }
+                    // add on any project defaults
+                    JsonObject jsonObject = template.projectSettings();
+                    if (jsonObject != null) {
+                        templateData = new JsonTemplateData(null, templateData, jsonObject, interactive);
+                    }
+                    Session session = new Session(template.rootDirectory(), templateData, targetDir);
                     session.run();
                 }
                 else {

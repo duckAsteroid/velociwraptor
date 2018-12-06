@@ -12,7 +12,7 @@ import java.util.Scanner;
 import static org.fusesource.jansi.Ansi.Color.BLUE;
 import static org.fusesource.jansi.Ansi.ansi;
 
-public class ConsoleInteractive implements UserInteractive {
+public class ConsoleInteractive extends UserInteractive {
     private final Scanner input;
     private final PrintStream output;
 
@@ -24,6 +24,29 @@ public class ConsoleInteractive implements UserInteractive {
 
     public static UserInteractive console() {
         return new ConsoleInteractive(new Scanner(System.in), System.out);
+    }
+
+
+    @Override
+    public Boolean askBooleanOption(String key, boolean current) {
+        // print the options
+        output.println(ansi().fg(BLUE) + "[?] " + ansi().reset() + "Please choose an option for \""+key+"\":");
+        Boolean selection = null;
+        do {
+            output.println("    Choose from " + current + "/" + (!current) + ansi().fgBright(BLUE) + "[default: " + current + "]" + ansi().reset());
+            String line = input.nextLine().toLowerCase();
+            if (line.length()<=0) {
+                selection = current;
+            }
+            else if (line.startsWith("t") || line.startsWith("y")) {
+                selection = Boolean.TRUE;
+            }
+            else if (line.startsWith("f") || line.startsWith("n")) {
+                selection = Boolean.FALSE;
+            }
+        }
+        while(selection == null);
+        return selection;
     }
 
     /**

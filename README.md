@@ -2,10 +2,21 @@ velociwraptor
 ===========
 A project templating library based on the ideas in https://github.com/tmrts/boilr
 
+Template engine used is [JMTE][https://github.com/DJCordhose/jmte]
+
 Getting Started
 ---------------
 
-EDIT ME
+Templates
+-------
+Velociwraptor will use templates from many places including:
+* A template directory in the local file system
+* A template ZIP (including .jar etc.) in the local file system
+* A template ZIP (including .jar etc.) on some public URI
+* A maven repository co-ordinate (it will fetch the JAR and use it as the template)
+* A github repository (it will grab a snapshot ZIP from github.com)
+
+If you want to create your own templates check out the guide.
 
 Download
 -----------
@@ -26,3 +37,8 @@ TO DO
     * Allow templates to find/reference each other by maven co-ord
 
 
+
+
+[JMTE]: https://github.com/DJCordhose/jmte
+
+[https://github.com/DJCordhose/jmte]: https://github.com/DJCordhose/jmte

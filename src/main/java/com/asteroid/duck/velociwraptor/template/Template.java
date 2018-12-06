@@ -1,4 +1,4 @@
-package com.asteroid.duck.velociwraptor.model;
+package com.asteroid.duck.velociwraptor.template;
 
 import javax.json.JsonObject;
 

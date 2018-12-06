@@ -1,7 +1,6 @@
-package com.asteroid.duck.velociwraptor.model;
+package com.asteroid.duck.velociwraptor.template;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.stream.Stream;
 
 /**

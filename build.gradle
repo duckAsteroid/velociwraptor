@@ -37,8 +37,6 @@ dependencies {
     testCompile 'org.mockito:mockito-all:1.10.19'
     // min web server for tests
     testCompile 'com.sparkjava:spark-core:2.7.2'
-    // for file testing
-    testCompile 'org.hamcrest:java-hamcrest:2.0.0.0'
     // logging
     testRuntime 'ch.qos.logback:logback-classic:1.2.3'
 }
@@ -53,3 +51,30 @@ task generatePropInfo {
     }
 }
 sourceSets.main.output.dir genOutputDir, builtBy: generatePropInfo
+
+task downloadTemplate {
+    description "Downloads the latest version of the template from github"
+    group "verification"
+    doLast {
+        def jar = new File(buildDir, "tmp/template.zip")
+        jar.withOutputStream {
+            out -> new URL("https://github.com/duckAsteroid/velociwraptor/archive/template.zip").withInputStream {
+                from -> out << from 
+            }
+        }
+    }
+}
+
+task copyAndRenameZip(type: Copy) {
+    group "verification"
+    from zipTree("${buildDir}/tmp/template.zip")
+    into "${buildDir}/explodedZip/"
+}
+
+task createTemplate(type: Zip) {
+    description "Modifies the downloaded ZIP into a JAR"
+    group "verification"
+    destinationDir = file("${projectDir}/src/test/resources/com/asteroid/duck/velociwraptor")
+    archiveName = "template.jar"
+    from "${buildDir}/explodedZip/velociwraptor-template/"
+}

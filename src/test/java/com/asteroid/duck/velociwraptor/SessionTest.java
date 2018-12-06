@@ -1,7 +1,10 @@
 package com.asteroid.duck.velociwraptor;
 
-import com.asteroid.duck.velociwraptor.model.Template;
-import com.asteroid.duck.velociwraptor.template.FileSystemTemplate;
+import com.asteroid.duck.velociwraptor.model.JsonTemplateData;
+import com.asteroid.duck.velociwraptor.model.TemplateData;
+import com.asteroid.duck.velociwraptor.template.Directory;
+import com.asteroid.duck.velociwraptor.template.Template;
+import com.asteroid.duck.velociwraptor.template.fs.FileSystemTemplate;
 import com.asteroid.duck.velociwraptor.user.UserInteractive;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -13,13 +16,11 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static com.asteroid.duck.velociwraptor.AssertFile.assertStandardTemplateApplied;
 import static org.junit.Assert.*;
-import static org.hamcrest.io.FileMatchers.*;
 
 public class SessionTest {
     public static final String EXPECTED_CONTENT = "This was here";
@@ -30,15 +31,18 @@ public class SessionTest {
 
     @Before
     public void setUp() throws Exception {
+        UserInteractive interactive = UserInteractive.nullInteractive();
         Path zipPath = Paths.get(SessionTest.class.getResource("template.jar").toURI());
         Template template = FileSystemTemplate.fromZip(zipPath);
+        Directory root = template.rootDirectory();
+        TemplateData data = new JsonTemplateData(template.projectSettings(), interactive);
         target = temporaryFolder.newFolder("session-test");
-        subject = new Session(template, target, UserInteractive.nullInteractive());
+        subject = new Session(root, data, target);
     }
 
     @After
     public void tearDown() throws Exception {
-        FileUtils.forceDelete(target);
+        //FileUtils.forceDelete(target);
     }
 
     @Test
@@ -49,7 +53,8 @@ public class SessionTest {
         subject.run();
 
         assertStandardTemplateApplied(target, false);
-        assertThat(nonColliding, anExistingFile());
+
+        assertTrue(nonColliding.exists());
         String content = FileUtils.readFileToString(nonColliding, StandardCharsets.UTF_8);
         assertEquals(EXPECTED_CONTENT, content);
     }
@@ -62,7 +67,7 @@ public class SessionTest {
         subject.run();
 
         assertStandardTemplateApplied(target, false);
-        assertThat(collider, anExistingFile());
+        assertTrue(collider.exists());
         String content = FileUtils.readFileToString(collider, StandardCharsets.UTF_8);
         assertEquals(EXPECTED_CONTENT, content);
     }

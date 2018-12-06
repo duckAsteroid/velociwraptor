@@ -1,6 +1,5 @@
 package com.asteroid.duck.velociwraptor;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,13 +9,8 @@ import spark.Spark;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
-import static com.asteroid.duck.velociwraptor.AssertFile.*;
-import static org.hamcrest.Matchers.*;
-import static org.hamcrest.io.FileMatchers.aFileWithSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static com.asteroid.duck.velociwraptor.AssertFile.assertStandardTemplateApplied;
 
 public class MainTest {
     @Rule

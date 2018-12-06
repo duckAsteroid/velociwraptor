@@ -1,7 +1,6 @@
-package com.asteroid.duck.velociwraptor.template;
+package com.asteroid.duck.velociwraptor.template.fs;
 
-import com.asteroid.duck.velociwraptor.model.Directory;
-import com.sun.nio.zipfs.ZipFileSystem;
+import com.asteroid.duck.velociwraptor.template.Directory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -13,32 +12,36 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
-public class ZipFileSystemTemplateTest {
+public class FileSystemTemplateTest {
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private FileSystemTemplate subject;
 
     @Before
     public void setUp() throws Exception {
-        URL zipUrl = ZipFileSystemTemplateTest.class.getResource("template.zip");
-        Path path = Paths.get(zipUrl.toURI());
-        FileSystem zipFs = FileSystems.newFileSystem(path, getClass().getClassLoader());
-        Path root = zipFs.getPath(".");
-        subject = new FileSystemTemplate(root);
+        File root = temporaryFolder.newFolder();
+        FileUtils.write(new File(root, "default.json"), "{ \"Name\": \"Test\"}", StandardCharsets.UTF_8);
+        File folder = new File(root, "template");
+        folder.mkdirs();
+        FileUtils.write(new File(folder, "test.txt"), "This is just\na test.\nDo not be alarmed!", StandardCharsets.UTF_8);
+        FileUtils.write(new File(folder,"test2.txt"), "This is also just a test.", StandardCharsets.UTF_8);
+        File sub = new File(folder, "sub");
+        sub.mkdirs();
+        FileUtils.write(new File(sub, "sub-test.txt"), "This is in the sub folder.", StandardCharsets.UTF_8);
+
+        subject = new FileSystemTemplate(root.toPath());
     }
 
     @After
     public void tearDown() throws Exception {
+        temporaryFolder.delete();
     }
 
     @Test
@@ -47,10 +50,10 @@ public class ZipFileSystemTemplateTest {
         assertNotNull("directory");
         assertEquals("template", directory.rawName());
 
-        List<com.asteroid.duck.velociwraptor.model.File> files = directory.childFiles().collect(Collectors.toList());
+        List<com.asteroid.duck.velociwraptor.template.File> files = directory.childFiles().collect(Collectors.toList());
         assertNotNull(files);
         assertEquals(2, files.size());
-        for (com.asteroid.duck.velociwraptor.model.File file : files) {
+        for (com.asteroid.duck.velociwraptor.template.File file : files) {
             String content = IOUtils.toString(file.rawContent(), StandardCharsets.UTF_8);
             assertTrue(content.contains("This is"));
         }
@@ -65,7 +68,7 @@ public class ZipFileSystemTemplateTest {
 
         assertEquals(0, sub.childDirs().count());
 
-        com.asteroid.duck.velociwraptor.model.File subFile = sub.childFiles().findFirst().orElseThrow(FileNotFoundException::new);
+        com.asteroid.duck.velociwraptor.template.File subFile = sub.childFiles().findFirst().orElseThrow(FileNotFoundException::new);
         assertEquals("sub-test.txt", subFile.rawName());
         String content = IOUtils.toString(subFile.rawContent(), StandardCharsets.UTF_8);
         assertEquals("This is in the sub folder.", content);
