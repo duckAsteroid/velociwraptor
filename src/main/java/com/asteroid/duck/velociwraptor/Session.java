@@ -61,27 +61,34 @@ public class Session {
         // TODO Check for conditional files and folders
         templateSource.childDirs().forEach(tmp -> {
             File newDirectory = new File(targetDirectory, convertRawName(tmp.rawName(), model));
-            newDirectory.mkdir();
-            // recurse
-            try {
-                apply(tmp, newDirectory, model);
+            if (!newDirectory.exists()) {
+                newDirectory.mkdir();
             }
-            catch(IOException e) {
-                LOG.error("Error processing dir "+newDirectory.getAbsolutePath());
+            // if we have a file with this name already!!
+            if (newDirectory.isDirectory()) {
+                // recurse
+                try {
+                    apply(tmp, newDirectory, model);
+                } catch (IOException e) {
+                    LOG.error("Error processing dir " + newDirectory.getAbsolutePath());
+                }
             }
         });
 
         templateSource.childFiles().forEach(tmp -> {
             // read template
             try {
-                String template = IOUtils.toString(tmp.rawContent(), Charset.defaultCharset());
-                String newContent = engine.transform(template, model);
-
                 File newFile = new File(targetDirectory, convertRawName(tmp.rawName(), model));
-                FileUtils.write(newFile, newContent, Charset.defaultCharset(), false);
+                if (!newFile.exists()) {
+                    String template = IOUtils.toString(tmp.rawContent(), Charset.defaultCharset());
+                    String newContent = engine.transform(template, model);
+                    FileUtils.write(newFile, newContent, Charset.defaultCharset(), false);
+                } else {
+                    LOG.warn(newFile.getCanonicalPath() + " already exists, skipping in template");
+                }
             }
             catch(IOException e) {
-                LOG.error("Unable to read template", e);
+                LOG.error("Unable to read or apply template", e);
             }
         });
     }

@@ -1,5 +1,6 @@
 package com.asteroid.duck.velociwraptor.template;
 
+import com.asteroid.duck.velociwraptor.Main;
 import com.asteroid.duck.velociwraptor.model.Directory;
 import com.asteroid.duck.velociwraptor.model.File;
 import com.asteroid.duck.velociwraptor.model.Template;
@@ -9,8 +10,8 @@ import javax.json.JsonObject;
 import javax.json.JsonReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.URI;
+import java.nio.file.*;
 import java.util.stream.Stream;
 
 /**
@@ -81,6 +82,16 @@ public class FileSystemTemplate implements Template {
      * The JSON data from the 'project.json' file
      */
     private final JsonObject projectSettings;
+
+    public static Template fromZip(Path pathToZip) throws IOException {
+        return fromZip(pathToZip, ".");
+    }
+
+    public static Template fromZip(Path pathToZip, String root) throws IOException {
+        FileSystem zipFileSystem = FileSystems.newFileSystem(pathToZip, Main.class.getClassLoader());
+        Path zipRoot = zipFileSystem.getPath(root);
+        return new FileSystemTemplate(zipRoot);
+    }
 
     public FileSystemTemplate(Path root) throws IOException {
         Path templatePath = root.resolve("template");

@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -172,7 +170,7 @@ public class Main {
                         path = downloadAndMakeLocal(path, retainCache);
                         LOG.debug("Using local cache "+path);
                     }
-                    template = fromZip(path, zipRoot.orElse("."));
+                    template = FileSystemTemplate.fromZip(Paths.get(path), zipRoot.orElse("."));
                 }
                 else if (commandLine.hasOption(MAVEN)) {
                     // maven repository coords
@@ -188,7 +186,7 @@ public class Main {
                     URI uri = baseUri.resolve(path);
 
                     URI local = downloadAndMakeLocal(uri, retainCache);
-                    template = fromZip(local, zipRoot.orElse("."));
+                    template = FileSystemTemplate.fromZip(Paths.get(local), zipRoot.orElse("."));
                 }
                 else if (commandLine.hasOption(GITHUB)) {
                     // github repository
@@ -204,7 +202,7 @@ public class Main {
                     URI uri = baseUri.resolve(path);
 
                     URI local = downloadAndMakeLocal(uri, retainCache);
-                    template = fromZip(local, zipRoot.orElse(repository+"-"+branch));
+                    template = FileSystemTemplate.fromZip(Paths.get(local), zipRoot.orElse(repository+"-"+branch));
                 }
 
                 // if we have a template - create a session
@@ -222,13 +220,6 @@ public class Main {
             doHelp(options);
             throw new RuntimeException(e);
         }
-    }
-
-    private static Template fromZip(URI uri, String root) throws IOException {
-        Path path = Paths.get(uri);
-        FileSystem zipFileSystem = FileSystems.newFileSystem(path, Main.class.getClassLoader());
-        Path zipRoot = zipFileSystem.getPath(root);
-        return new FileSystemTemplate(zipRoot);
     }
 
     private static URI downloadAndMakeLocal(URI path, boolean retainCache) throws IOException {
