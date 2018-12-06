@@ -7,14 +7,17 @@ Template engine used is [JMTE][https://github.com/DJCordhose/jmte]
 Getting Started
 ---------------
 
-Let's start with a simple "hello world" example. We run `velociwraptor` and ask it to use
-a GitHub repository `duckAsteroid/hello-world/master` is shorthand for the `master` branch 
-of the https://github.com/duckAsteroid/hello-world repository. This template only contains one 
+Let's start with a simple "hello world" example. 
+
+We will use `velociwraptor` with the worlds most simplistic template. This template only contains one 
 file `hello.txt`.
 ```text
 C:\velociwraptor-example>velociwraptor -g duckAsteroid/hello-world/master
 ```
-Velociwraptor is in interactive mode, so it prompts us to confirm the greeting we would
+We asked velociwraptor to use a template in a GitHub repository `duckAsteroid/hello-world/master` this is shorthand 
+for the `master` branch of the https://github.com/duckAsteroid/hello-world repository. 
+
+Velociwraptor is in interactive mode, it prompts us to confirm the greeting we would
 like to see "templated" into `hello.txt`...
 ```text
 Velociwraptor v0.0.1
