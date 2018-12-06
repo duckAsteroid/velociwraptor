@@ -1,7 +1,8 @@
 package com.asteroid.duck.velociwraptor;
 
 import com.asteroid.duck.velociwraptor.model.Template;
-import com.asteroid.duck.velociwraptor.project.UserInteractive;
+import com.asteroid.duck.velociwraptor.user.ConsoleInteractive;
+import com.asteroid.duck.velociwraptor.user.UserInteractive;
 import com.asteroid.duck.velociwraptor.template.FileSystemTemplate;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
@@ -14,7 +15,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -136,7 +136,7 @@ public class Main {
             final File currentWorkingDir = new File(".");
             CommandLine commandLine = parser.parse(options, args);
             // create an interactive user if needed
-            try (UserInteractive interactive = commandLine.hasOption('q') ? null : UserInteractive.console()) {
+            try (UserInteractive interactive = commandLine.hasOption('q') ? null : ConsoleInteractive.console()) {
                 // optional remote repository name (see later)
                 Optional<String> repo = Optional.ofNullable(commandLine.getOptionValue('r'));
                 // zip root (see later)

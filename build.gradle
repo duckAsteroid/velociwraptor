@@ -17,26 +17,34 @@ repositories {
 }
 
 dependencies {
-    
+    // JMTE is our template engine
     compile group: 'com.floreysoft', name: 'jmte', version: '5.0.0'
+    // JSON API for parsing project.json
     compile 'javax.json:javax.json-api:1.0'
+    // JANSI makes the interactive console pretty colours
     compile 'org.fusesource.jansi:jansi:1.17.1'
+    // download, copy files etc.
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    // command line parser
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    // logging
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
-    
+    // runtime JSON Lib
     runtime 'org.glassfish:javax.json:1.0.4'
-
+    
+    // test dependencies...
     testCompile 'junit:junit:4.11'
     testCompile 'org.mockito:mockito-all:1.10.19'
-    
+    // min web server for tests
     testCompile 'com.sparkjava:spark-core:2.7.2'
-    
+    // for file testing
+    testCompile 'org.hamcrest:java-hamcrest:2.0.0.0'
+    // logging
     testRuntime 'ch.qos.logback:logback-classic:1.2.3'
 }
 
+// generate version number resource
 ext.genOutputDir = file("$buildDir/generated-resources")
-
 task generatePropInfo {
     ext.outputFile = file("$genOutputDir/project-info.properties")
     outputs.file(outputFile)
@@ -44,5 +52,4 @@ task generatePropInfo {
         outputFile.text = "version=${project.version}"
     }
 }
-
 sourceSets.main.output.dir genOutputDir, builtBy: generatePropInfo

@@ -1,4 +1,4 @@
-package com.asteroid.duck.velociwraptor.project;
+package com.asteroid.duck.velociwraptor.user;
 
 import org.fusesource.jansi.AnsiConsole;
 
@@ -6,25 +6,24 @@ import javax.json.JsonArray;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.xml.ws.WebServiceException;
-import java.io.Closeable;
 import java.io.PrintStream;
 import java.util.Scanner;
 
 import static org.fusesource.jansi.Ansi.Color.BLUE;
 import static org.fusesource.jansi.Ansi.ansi;
 
-public class UserInteractive implements Closeable {
+public class ConsoleInteractive implements UserInteractive {
     private final Scanner input;
     private final PrintStream output;
 
-    public UserInteractive(Scanner input, PrintStream output) {
+    public ConsoleInteractive(Scanner input, PrintStream output) {
         AnsiConsole.systemInstall();
         this.input = input;
         this.output = output;
     }
 
     public static UserInteractive console() {
-        return new UserInteractive(new Scanner(System.in), System.out);
+        return new ConsoleInteractive(new Scanner(System.in), System.out);
     }
 
     /**

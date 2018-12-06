@@ -1,22 +1,20 @@
-package com.asteroid.duck.velociwraptor.project;
+package com.asteroid.duck.velociwraptor.user;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonString;
 import java.io.*;
-import java.nio.file.Files;
 import java.util.Scanner;
 
 import static org.junit.Assert.*;
 
-public class UserInteractiveTest {
-    private UserInteractive subject;
+public class ConsoleInteractiveTest {
+    private ConsoleInteractive subject;
 
     private static Scanner wrap(String ... lines) {
         StringBuilder output = new StringBuilder();
@@ -36,11 +34,11 @@ public class UserInteractiveTest {
 
     @Test
     public void askOption() throws IOException {
-        InputStream stream = UserInteractiveTest.class.getResourceAsStream("askOption1.bin");
+        InputStream stream = ConsoleInteractiveTest.class.getResourceAsStream("askOption1.bin");
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream printWriter = new PrintStream(baos, true)) {
-            subject = new UserInteractive(wrap("980", "-5", "0", "wibble", "2"), printWriter);
+            subject = new ConsoleInteractive(wrap("980", "-5", "0", "wibble", "2"), printWriter);
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
             arrayBuilder.add("One");
             arrayBuilder.add("Two");
@@ -62,11 +60,11 @@ public class UserInteractiveTest {
 
     @Test
     public void askOptionDefault() throws IOException {
-        InputStream stream = UserInteractiveTest.class.getResourceAsStream("askOption2.bin");
+        InputStream stream = ConsoleInteractiveTest.class.getResourceAsStream("askOption2.bin");
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream printWriter = new PrintStream(baos, true)) {
-            subject = new UserInteractive(wrap(""), printWriter);
+            subject = new ConsoleInteractive(wrap(""), printWriter);
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
             arrayBuilder.add("One");
             arrayBuilder.add("Two");
@@ -89,11 +87,11 @@ public class UserInteractiveTest {
 
     @Test
     public void askForDefault() throws IOException {
-        InputStream stream = UserInteractiveTest.class.getResourceAsStream("askForDefault.bin");
+        InputStream stream = ConsoleInteractiveTest.class.getResourceAsStream("askForDefault.bin");
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream printWriter = new PrintStream(baos, true)) {
-            subject = new UserInteractive(wrap(""), printWriter);
+            subject = new ConsoleInteractive(wrap(""), printWriter);
 
             Object result = subject.askFor("Key", "Default");
             assertNotNull(result);
@@ -108,11 +106,11 @@ public class UserInteractiveTest {
 
     @Test
     public void askFor() throws IOException {
-        InputStream stream = UserInteractiveTest.class.getResourceAsStream("askFor.bin");
+        InputStream stream = ConsoleInteractiveTest.class.getResourceAsStream("askFor.bin");
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream printWriter = new PrintStream(baos, true)) {
-            subject = new UserInteractive(wrap("wibble"), printWriter);
+            subject = new ConsoleInteractive(wrap("wibble"), printWriter);
 
             Object result = subject.askFor("Key", "Current");
             assertNotNull(result);

@@ -1,5 +1,7 @@
 package com.asteroid.duck.velociwraptor.project;
 
+import com.asteroid.duck.velociwraptor.user.UserInteractive;
+
 import javax.json.*;
 import java.util.*;
 
@@ -15,7 +17,7 @@ public class InteractiveMap implements Map<String, Object> {
     public InteractiveMap(String prefix, JsonObject baseObject, UserInteractive user) {
         this.prefix = prefix;
         this.baseObject = baseObject;
-        this.user = user;
+        this.user = user == null ? UserInteractive.nullInteractive() : user;
     }
 
     @Override

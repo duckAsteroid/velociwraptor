@@ -3,17 +3,17 @@ package com.asteroid.duck.velociwraptor;
 import com.asteroid.duck.velociwraptor.model.Directory;
 import com.asteroid.duck.velociwraptor.model.Template;
 import com.asteroid.duck.velociwraptor.project.InteractiveMap;
-import com.asteroid.duck.velociwraptor.project.UserInteractive;
+import com.asteroid.duck.velociwraptor.project.JsonConverter;
+import com.asteroid.duck.velociwraptor.user.UserInteractive;
 import com.floreysoft.jmte.Engine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
+import javax.json.JsonValue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -48,6 +48,8 @@ public class Session {
         }
         this.targetDirectory = targetDirectory;
         this.user = user;
+        // special renderer for JSON objects
+        engine.registerRenderer(JsonValue.class, new JsonConverter());
     }
 
     public void run() throws IOException {
