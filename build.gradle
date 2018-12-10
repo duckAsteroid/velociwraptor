@@ -31,6 +31,9 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     // runtime JSON Lib
     runtime 'org.glassfish:javax.json:1.0.4'
+    // no-op logging for runtime
+    runtimeOnly group: 'org.slf4j', name: 'slf4j-nop', version: '1.7.25'
+    
     
     // test dependencies...
     testCompile 'junit:junit:4.11'
@@ -78,3 +81,20 @@ task createTemplate(type: Zip) {
     archiveName = "template.jar"
     from "${buildDir}/explodedZip/velociwraptor-template/"
 }
+
+task extractDistribution(type: Copy) { 
+    description 'Extracts the distribution ZIP into a temp dir; ready for InnoSetup to consume'
+    group 'distribution'
+    from(zipTree("${buildDir}/distributions/velociwraptor-0.0.1.zip"))
+    into "${buildDir}/distributions/"
+}
+
+task innoSetup (type: Exec){
+    description "Creates an installer using InnoSetup"
+    group "distribution"
+    workingDir 'src/main/inno-setup'
+    commandLine "c:\\Program Files (x86)\\Inno Setup 5\\iscc.exe", 'velociwraptor.iss'
+}
+
+innoSetup.dependsOn extractDistribution
+extractDistribution.dependsOn distZip
