@@ -1,6 +1,5 @@
 package com.asteroid.duck.velociwraptor.user;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Test;
@@ -38,7 +37,7 @@ public class ConsoleInteractiveTest {
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream printWriter = new PrintStream(baos, true)) {
-            subject = new ConsoleInteractive(wrap("980", "-5", "0", "wibble", "2"), printWriter);
+            subject = new ConsoleInteractive(false, wrap("980", "-5", "0", "wibble", "2"), printWriter);
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
             arrayBuilder.add("One");
             arrayBuilder.add("Two");
@@ -64,7 +63,7 @@ public class ConsoleInteractiveTest {
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream printWriter = new PrintStream(baos, true)) {
-            subject = new ConsoleInteractive(wrap(""), printWriter);
+            subject = new ConsoleInteractive(false, wrap(""), printWriter);
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
             arrayBuilder.add("One");
             arrayBuilder.add("Two");
@@ -91,7 +90,7 @@ public class ConsoleInteractiveTest {
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream printWriter = new PrintStream(baos, true)) {
-            subject = new ConsoleInteractive(wrap(""), printWriter);
+            subject = new ConsoleInteractive(false, wrap(""), printWriter);
 
             Object result = subject.askFor("Key", "Default");
             assertNotNull(result);
@@ -110,7 +109,7 @@ public class ConsoleInteractiveTest {
         final byte[] expected = IOUtils.toByteArray(stream);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream printWriter = new PrintStream(baos, true)) {
-            subject = new ConsoleInteractive(wrap("wibble"), printWriter);
+            subject = new ConsoleInteractive(false, wrap("wibble"), printWriter);
 
             Object result = subject.askFor("Key", "Current");
             assertNotNull(result);

@@ -50,6 +50,7 @@ public class Main {
     private static final char QUIET = 'q';
     private static final char ZIP_ROOT = 'i';
     private static final char CACHE = 'c';
+    private static final char NO_COLOR = 'x';
 
     private static String loadVersionFromProperties() {
         try {
@@ -101,6 +102,10 @@ public class Main {
                 .desc("Retain any cached downloads of ZIP/JAR files")
                 .build();
         options.addOption(retainCache);
+
+        Option noColor = Option.builder(opt(NO_COLOR)).longOpt("no-color")
+                .desc("No color in console")
+                .build();
 
         OptionGroup template = new OptionGroup();
         template.setRequired(true);
@@ -168,14 +173,17 @@ public class Main {
         try {
             final File currentWorkingDir = new File(".");
             CommandLine commandLine = parser.parse(options, args);
+            // use colors in console
+            boolean noColors = commandLine.hasOption(NO_COLOR);
             // create an interactive user if needed
-            try (UserInteractive interactive = commandLine.hasOption('q') ? UserInteractive.nullInteractive() : ConsoleInteractive.console()) {
+            try (UserInteractive interactive = commandLine.hasOption('q') ? UserInteractive.nullInteractive() : ConsoleInteractive.console(noColors)) {
                 // optional remote repository name (see later)
                 Optional<String> repo = Optional.ofNullable(commandLine.getOptionValue('r'));
                 // zip root (see later)
                 Optional<String> zipRoot = Optional.ofNullable(commandLine.getOptionValue('i'));
                 // retain cached ZIPs
                 boolean retainCache = commandLine.hasOption('c');
+
                 // output directory (if specified - else CWD)
                 String target = commandLine.getOptionValue(OUT);
                 final File targetDir = target == null ? currentWorkingDir : new File(target);

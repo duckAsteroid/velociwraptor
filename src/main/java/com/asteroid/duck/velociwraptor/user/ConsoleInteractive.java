@@ -1,6 +1,8 @@
 package com.asteroid.duck.velociwraptor.user;
 
+import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
+import org.fusesource.jansi.AnsiPrintStream;
 
 import javax.json.JsonArray;
 import javax.json.JsonString;
@@ -15,15 +17,20 @@ import static org.fusesource.jansi.Ansi.ansi;
 public class ConsoleInteractive extends UserInteractive {
     private final Scanner input;
     private final PrintStream output;
+    private final boolean noColors;
 
-    public ConsoleInteractive(Scanner input, PrintStream output) {
-        AnsiConsole.systemInstall();
+    public ConsoleInteractive(boolean noColors, Scanner input, PrintStream output) {
+        this.noColors = noColors;
         this.input = input;
         this.output = output;
+        Ansi.setEnabled(!noColors);
+        if (!noColors) {
+            AnsiConsole.systemInstall();
+        }
     }
 
-    public static UserInteractive console() {
-        return new ConsoleInteractive(new Scanner(System.in), System.out);
+    public static UserInteractive console(boolean noColors) {
+        return new ConsoleInteractive(noColors, new Scanner(System.in), System.out);
     }
 
 
@@ -113,6 +120,8 @@ public class ConsoleInteractive extends UserInteractive {
 
     @Override
     public void close() throws WebServiceException {
-        AnsiConsole.systemUninstall();
+        if (!noColors) {
+            AnsiConsole.systemUninstall();
+        }
     }
 }
