@@ -62,7 +62,7 @@ public class SessionTest {
     @Test
     public void targetContainsCollidingSimpleFileName() throws IOException {
         File collider = new File(target, "test.txt");
-        FileUtils.writeStringToFile(collider, "This was here", StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(collider, EXPECTED_CONTENT, StandardCharsets.UTF_8);
 
         subject.run();
 

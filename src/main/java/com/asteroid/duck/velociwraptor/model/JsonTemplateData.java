@@ -41,19 +41,18 @@ public class JsonTemplateData extends TemplateData<String, JsonValue> {
 
     @Override
     public Object get(Object key) {
-        JsonValue jsonValue = dataObject.get(key);
         // we return objects..
-        Object result = jsonValue;
+        Object result = super.get(key);
 
         // ask adapter for another value...
         String promptKey = prefix() + key;
-        if (jsonValue != null) {
-            result = valueAdapter.get(promptKey, jsonValue);
+        if (result != null && result instanceof JsonValue) {
+            result = valueAdapter.get(promptKey, (JsonValue) result);
         }
 
         // wrap the any JSON object in a partial cloned Map (supports property chaining)
         if(result instanceof JsonObject) {
-            result = new JsonTemplateData(promptKey, delegate, (JsonObject)jsonValue, valueAdapter);
+            result = new JsonTemplateData(promptKey, delegate, (JsonObject)result, valueAdapter);
         }
         return result;
     }

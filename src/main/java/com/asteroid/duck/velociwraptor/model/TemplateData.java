@@ -41,11 +41,17 @@ public class TemplateData<K, V> implements Map<String, Object> {
 
     @Override
     public Object get(Object key) {
-        V v = dataObject.get(key);
-        if(v == null && delegate != null) {
-            return delegate.get(key);
+        Object delegateValue = null;
+
+        if(delegate != null) {
+             delegateValue = delegate.get(key);
         }
-        return v;
+
+        if (delegateValue == null) {
+            return dataObject.get(key);
+        }
+
+        return delegateValue;
     }
 
     @Override

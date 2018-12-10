@@ -68,8 +68,10 @@ public class SectionParser implements Closeable {
         Section section = Section.fromLine(line);
         if (section == null) {
             if (current != Section.NO_TEMPLATE) {
+                if (!currentSection.isEmpty()) {
+                    currentSection += "\n";
+                }
                 currentSection += line;
-                currentSection += "\n";
             }
         }
         else if (section != current) {
