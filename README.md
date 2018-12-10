@@ -7,9 +7,6 @@ Template engine used is [JMTE][https://github.com/DJCordhose/jmte]
 Getting Started
 ---------------
 
-Let's start with a simple "hello world" example. We run `velociwraptor` and ask it to use
-a GitHub repository `duckAsteroid/hello-world/master` is shorthand for the `master` branch 
-of the https://github.com/duckAsteroid/hello-world repository. This template only contains one 
 Let's start with a simple "hello world" example. 
 
 We will use `velociwraptor` with the worlds most simplistic template. This template only contains one 
@@ -27,7 +24,33 @@ Velociwraptor v0.0.1
 [?] Please choose an option for "Greeting" [default: Hello world!]:
 ```
 The default looks fine, so we hit &lt;ENTER&gt;. The template runs and we now have a new
-`hello.txt` file. Let's see what's inside it...
+`hello.txt` file. 
+
+Let's look at the structure of [that github repo](https://github.com/duckAsteroid/hello-world):
+* `template/hello.txt` - this folder `template` contains the files that are copied as part of our template.
+* `default.json` - this JSON file contains the default values for variables to use in the template (not copied into 
+template output).
+* `Readme.md` - this is a readme file for GitHub (not copied into template output)
+* `LICENSE` - this is a licence for the template (not copied into template output)
+
+Looking inside `template/hello.txt` we can see:
+
+```text
+${Greeting}
+
+If you can read this - velociwraptor is working!
+```
+
+The first line refers to a template variable `Greeting`. Velociwraptor prompted us for the value we would like to use
+and `default.json` contains a default to use (should we choose not to supply a value):
+
+```json
+{
+  "Greeting": "Hello world!"
+}
+```
+
+So let's look inside our template output and see what's inside it...
 ```text
 C:\velociwraptor-example>more hello.txt
 Hello world!
@@ -36,6 +59,7 @@ If you can read this - velociwraptor is working!
 
 C:\velociwraptor-example>
 ```
+
 As you can see our greeting was placed on the first line. 
 
 This is a very simple example. We could create many directories and files and use many
