@@ -3,8 +3,8 @@ package com.asteroid.duck.velociwraptor;
 import com.asteroid.duck.velociwraptor.model.JsonTemplateData;
 import com.asteroid.duck.velociwraptor.model.TemplateData;
 import com.asteroid.duck.velociwraptor.template.Directory;
-import com.asteroid.duck.velociwraptor.template.Template;
-import com.asteroid.duck.velociwraptor.template.fs.FileSystemTemplate;
+import com.asteroid.duck.velociwraptor.template.TemplateRoot;
+import com.asteroid.duck.velociwraptor.template.fs.FileSystemTemplateRoot;
 import com.asteroid.duck.velociwraptor.user.UserInteractive;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -33,9 +33,9 @@ public class SessionTest {
     public void setUp() throws Exception {
         UserInteractive interactive = UserInteractive.nullInteractive();
         Path zipPath = Paths.get(SessionTest.class.getResource("template.jar").toURI());
-        Template template = FileSystemTemplate.fromZip(zipPath);
-        Directory root = template.rootDirectory();
-        TemplateData data = new JsonTemplateData(template.projectSettings(), interactive);
+        TemplateRoot templateRoot = FileSystemTemplateRoot.fromZip(zipPath);
+        Directory root = templateRoot.rootDirectory();
+        TemplateData data = new JsonTemplateData(templateRoot.projectSettings(), interactive);
         target = temporaryFolder.newFolder("session-test");
         subject = new Session(root, data, target);
     }

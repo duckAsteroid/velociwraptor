@@ -2,10 +2,10 @@ package com.asteroid.duck.velociwraptor;
 
 import com.asteroid.duck.velociwraptor.model.JsonTemplateData;
 import com.asteroid.duck.velociwraptor.model.TemplateData;
-import com.asteroid.duck.velociwraptor.template.Template;
+import com.asteroid.duck.velociwraptor.template.TemplateRoot;
+import com.asteroid.duck.velociwraptor.template.fs.FileSystemTemplateRoot;
 import com.asteroid.duck.velociwraptor.user.ConsoleInteractive;
 import com.asteroid.duck.velociwraptor.user.UserInteractive;
-import com.asteroid.duck.velociwraptor.template.fs.FileSystemTemplate;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -180,17 +180,17 @@ public class Main {
                 String target = commandLine.getOptionValue(OUT);
                 final File targetDir = target == null ? currentWorkingDir : new File(target);
 
-                // create a template
-                Template template= null;
+                // create a templateRoot
+                TemplateRoot templateRoot = null;
                 if (commandLine.hasOption(DIR)) {
                     // using local directory
                     Path path = Paths.get(commandLine.getOptionValue(DIR));
-                    template = new FileSystemTemplate(path);
+                    templateRoot = new FileSystemTemplateRoot(path);
                 }
                 else if (commandLine.hasOption(ZIP)) {
                     // ZIP (local or remote)
                     URI path = URI.create(commandLine.getOptionValue(ZIP));
-                    LOG.debug("ZIP template URI="+path);
+                    LOG.debug("ZIP templateRoot URI="+path);
                     if (!path.isAbsolute()) {
                         path = currentWorkingDir.toURI().resolve(path);
                     }
@@ -200,7 +200,7 @@ public class Main {
                         path = downloadAndMakeLocal(path, retainCache);
                         LOG.debug("Using local cache "+path);
                     }
-                    template = FileSystemTemplate.fromZip(Paths.get(path), zipRoot.orElse("."));
+                    templateRoot = FileSystemTemplateRoot.fromZip(Paths.get(path), zipRoot.orElse("."));
                 }
                 else if (commandLine.hasOption(MAVEN)) {
                     // maven repository coords
@@ -216,11 +216,11 @@ public class Main {
                     URI uri = baseUri.resolve(path);
 
                     URI local = downloadAndMakeLocal(uri, retainCache);
-                    template = FileSystemTemplate.fromZip(Paths.get(local), zipRoot.orElse("."));
+                    templateRoot = FileSystemTemplateRoot.fromZip(Paths.get(local), zipRoot.orElse("."));
                 }
                 else if (commandLine.hasOption(GITHUB)) {
                     // github repository
-                    // e.g. duckAsteroid/velociwraptor/template
+                    // e.g. duckAsteroid/velociwraptor/templateRoot
                     // https://github.com/duckAsteroid/velociwraptor/archive/template.zip
                     final String[] githubCoords = commandLine.getOptionValue(GITHUB).split("\\/");
                     final String owner = githubCoords[0];
@@ -232,11 +232,11 @@ public class Main {
                     URI uri = baseUri.resolve(path);
 
                     URI local = downloadAndMakeLocal(uri, retainCache);
-                    template = FileSystemTemplate.fromZip(Paths.get(local), zipRoot.orElse(repository+"-"+branch));
+                    templateRoot = FileSystemTemplateRoot.fromZip(Paths.get(local), zipRoot.orElse(repository+"-"+branch));
                 }
 
-                // if we have a template - create a session
-                if (template != null) {
+                // if we have a templateRoot - create a session
+                if (templateRoot != null) {
                     // do we need to setup some delegates
                     TemplateData templateData = null;
                     if (commandLine.hasOption(SYS_PROPS)) {
@@ -254,15 +254,15 @@ public class Main {
                         }
                     }
                     // add on any project defaults
-                    JsonObject jsonObject = template.projectSettings();
+                    JsonObject jsonObject = templateRoot.projectSettings();
                     if (jsonObject != null) {
                         templateData = new JsonTemplateData(null, templateData, jsonObject, interactive);
                     }
-                    Session session = new Session(template.rootDirectory(), templateData, targetDir);
+                    Session session = new Session(templateRoot.rootDirectory(), templateData, targetDir);
                     session.run();
                 }
                 else {
-                    System.err.println("No recognised template source specified");
+                    System.err.println("No recognised templateRoot source specified");
                     doHelp(options);
                 }
             }

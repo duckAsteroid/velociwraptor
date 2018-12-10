@@ -2,7 +2,7 @@ package com.asteroid.duck.velociwraptor.template;
 
 import javax.json.JsonObject;
 
-public interface Template {
+public interface TemplateRoot {
     Directory rootDirectory();
     JsonObject projectSettings();
 }

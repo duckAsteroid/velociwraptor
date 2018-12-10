@@ -6,33 +6,46 @@ import com.asteroid.duck.velociwraptor.model.ValueAdapter;
 import javax.json.*;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class UserInteractive implements ValueAdapter, Closeable {
     public abstract JsonValue askOption(String key, JsonArray options);
     public abstract Boolean askBooleanOption(String key, boolean current);
     public abstract String askFor(String key, String current);
+    private Map<String, Object> cache = new HashMap<>();
 
     @Override
     public Object get(String promptKey, JsonValue jsonValue) {
-        switch (jsonValue.getValueType()) {
-            case ARRAY :
-                return askOption(promptKey, (JsonArray)jsonValue);
+        if (!cache.containsKey(promptKey)) {
+            Object result = jsonValue;
+            switch (jsonValue.getValueType()) {
+                case ARRAY:
+                    result = askOption(promptKey, (JsonArray) jsonValue);
+                    break;
 
-            case NUMBER:
-                String numString = JsonConverter.asString((JsonNumber)jsonValue);
-                return asJsonString(askFor(promptKey, numString));
+                case NUMBER:
+                    String numString = JsonConverter.asString((JsonNumber) jsonValue);
+                    result = asJsonString(askFor(promptKey, numString));
+                    break;
 
-            case STRING:
-                return asJsonString(askFor(promptKey, JsonConverter.asString((JsonString)jsonValue)));
+                case STRING:
+                    result = asJsonString(askFor(promptKey, JsonConverter.asString((JsonString) jsonValue)));
+                    break;
 
-            case TRUE:
-                return askBooleanOption(promptKey, true);
+                case TRUE:
+                    result = askBooleanOption(promptKey, true);
+                    break;
 
-            case FALSE:
-                return askBooleanOption(promptKey, false);
+                case FALSE:
+                    result = askBooleanOption(promptKey, false);
+                    break;
 
+            }
+            cache.put(promptKey, result);
+            return result;
         }
-        return jsonValue;
+        return cache.get(promptKey);
     }
 
     private JsonValue asJsonString(String value) {

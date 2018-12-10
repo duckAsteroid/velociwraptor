@@ -2,7 +2,7 @@ package com.asteroid.duck.velociwraptor.template.fs;
 
 import com.asteroid.duck.velociwraptor.Main;
 import com.asteroid.duck.velociwraptor.template.Directory;
-import com.asteroid.duck.velociwraptor.template.Template;
+import com.asteroid.duck.velociwraptor.template.TemplateRoot;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -11,13 +11,13 @@ import java.io.IOException;
 import java.nio.file.*;
 
 /**
- * The class provides a {@link Template} view of the resources in a given root {@link Path}.
+ * The class provides a {@link TemplateRoot} view of the resources in a given root {@link Path}.
  * The root is expected to contain a project file named <code>project.json</code> and a folder
  * called <code>template</code> containing the actual template files.
  *
  * This path can be a local file system directory or a path in a ZipFileSystem.
  */
-public class FileSystemTemplate implements Template {
+public class FileSystemTemplateRoot implements TemplateRoot {
 
     /**
      * The root directory containing the actual template
@@ -28,17 +28,17 @@ public class FileSystemTemplate implements Template {
      */
     private final JsonObject defaultValues;
 
-    public static Template fromZip(Path pathToZip) throws IOException {
+    public static TemplateRoot fromZip(Path pathToZip) throws IOException {
         return fromZip(pathToZip, ".");
     }
 
-    public static Template fromZip(Path pathToZip, String root) throws IOException {
+    public static TemplateRoot fromZip(Path pathToZip, String root) throws IOException {
         FileSystem zipFileSystem = FileSystems.newFileSystem(pathToZip, Main.class.getClassLoader());
         Path zipRoot = zipFileSystem.getPath(root);
-        return new FileSystemTemplate(zipRoot);
+        return new FileSystemTemplateRoot(zipRoot);
     }
 
-    public FileSystemTemplate(Path root) throws IOException {
+    public FileSystemTemplateRoot(Path root) throws IOException {
         Path projectFile = root.resolve("default.json");
         if (Files.exists(projectFile)) {
             JsonReader reader = Json.createReader(Files.newBufferedReader(projectFile));

@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 
 public class ZipFileSystemTemplateTest {
 
-    private FileSystemTemplate subject;
+    private FileSystemTemplateRoot subject;
 
     @Before
     public void setUp() throws Exception {
@@ -29,7 +29,7 @@ public class ZipFileSystemTemplateTest {
         Path path = Paths.get(zipUrl.toURI());
         FileSystem zipFs = FileSystems.newFileSystem(path, getClass().getClassLoader());
         Path root = zipFs.getPath(".");
-        subject = new FileSystemTemplate(root);
+        subject = new FileSystemTemplateRoot(root);
     }
 
     @After

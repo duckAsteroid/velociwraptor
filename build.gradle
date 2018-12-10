@@ -35,6 +35,7 @@ dependencies {
     // test dependencies...
     testCompile 'junit:junit:4.11'
     testCompile 'org.mockito:mockito-all:1.10.19'
+    
     // min web server for tests
     testCompile 'com.sparkjava:spark-core:2.7.2'
     // logging
