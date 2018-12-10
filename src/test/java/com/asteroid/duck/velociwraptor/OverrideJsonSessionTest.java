@@ -38,10 +38,8 @@ public class OverrideJsonSessionTest {
     public void setUp() throws Exception {
         target = temporaryFolder.newFolder("session-test");
         File template = temporaryFolder.newFolder("template-test");
-        FileUtils.write(new File(template, "default.json"), "{ \"Name\": \"Default\" }", StandardCharsets.UTF_8);
-        File sub = new File(template, "template");
-        sub.mkdirs();
-        FileUtils.write(new File(sub, "test.txt"), "${Name}", StandardCharsets.UTF_8);
+
+        createBasicTemplate(template);
 
         UserInteractive interactive = UserInteractive.nullInteractive();
 
@@ -53,6 +51,13 @@ public class OverrideJsonSessionTest {
         JsonTemplateData secondTemplate = new JsonTemplateData(null, firstTemplate, secondOverride, interactive);
         data = new JsonTemplateData(null, secondTemplate, templateRoot.projectSettings(), interactive);
         subject = new Session(templateRoot.rootDirectory(), data, target);
+    }
+
+    public static void createBasicTemplate(File template) throws IOException {
+        FileUtils.write(new File(template, "default.json"), "{ \"Name\": \"Default\" }", StandardCharsets.UTF_8);
+        File sub = new File(template, "template");
+        sub.mkdirs();
+        FileUtils.write(new File(sub, "test.txt"), "${Name}", StandardCharsets.UTF_8);
     }
 
     @After
