@@ -36,7 +36,7 @@ public class FileSystemTemplateTest {
         File folder = new File(root, "template");
         folder.mkdirs();
         FileUtils.write(new File(folder, "test.txt"), "This is just\na ${Name}.\nDo not be alarmed!", StandardCharsets.UTF_8);
-        FileUtils.write(new File(folder,"test2.txt"), "#end-template ignored comment\nThis is also just a ${Name}!", StandardCharsets.UTF_8);
+        FileUtils.write(new File(folder,"test2.txt"), "#no-template\nNOT INCLUDED!!\n\n#end-template ignored comment\nThis is also just a ${Name}!", StandardCharsets.UTF_8);
         FileUtils.write(new File(folder, "${if NotDefined}should-not-appear.txt${end}"), "This is - Should not happen", StandardCharsets.UTF_8);
         File sub = new File(folder, "sub");
         sub.mkdirs();
@@ -94,5 +94,6 @@ public class FileSystemTemplateTest {
 
         String content = FileUtils.readFileToString(new File(output, "test2.txt"), StandardCharsets.UTF_8);
         assertTrue(content.contains("${Name}"));
+        assertFalse(content.contains("NOT INCLUDED"));
     }
 }

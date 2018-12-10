@@ -11,7 +11,7 @@ WizardImageFile=icons\wizard.bmp
 Compression=lzma2
 SolidCompression=yes
 OutputDir=build\distributions
-OutputBaseFilename=setup
+OutputBaseFilename=velociwraptor-setup
 ChangesEnvironment=yes
 
 [Files]

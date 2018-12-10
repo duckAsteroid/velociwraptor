@@ -5,17 +5,37 @@ import org.apache.commons.io.IOUtils;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SectionParser implements Closeable {
-    public static final String END_TEMPLATE = "#end-template";
-    public static final String BEGIN_TEMPLATE = "#begin-template";
+    enum Section {
+        BEGIN_TEMPLATE("#begin-template"),
+        NO_TEMPLATE("#no-template"),
+        END_TEMPLATE("#end-template");
+
+        private final String lineStart;
+
+        Section(String lineStart) {
+            this.lineStart = lineStart;
+        }
+
+        public static Section fromLine(String line) {
+            if (line != null) {
+                for(Section s : values()) {
+                    if (line.startsWith(s.lineStart)) {
+                        return s;
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
     ArrayList<TemplateSection> sections = new ArrayList<>();
     private String currentSection = "";
-    private boolean isTemplate = true;
+    private Section current = Section.BEGIN_TEMPLATE;
 
     public static List<TemplateSection> parse(InputStream rawContent) throws IOException {
         List<String> lines = IOUtils.readLines(rawContent, Charset.defaultCharset());
@@ -31,30 +51,29 @@ public class SectionParser implements Closeable {
         return sections;
     }
 
-    private void beginSection(boolean isTemplate) {
-        this.isTemplate = isTemplate;
+    private void beginSection(Section newSection) {
+        this.current = newSection;
         currentSection = "";
     }
 
     private void endSection() {
         if (currentSection != null && currentSection.length() > 0) {
+            boolean isTemplate = current == Section.BEGIN_TEMPLATE;
             TemplateSection newSection = new TemplateSection(isTemplate, currentSection);
             sections.add(newSection);
         }
     }
 
     public void parseLine(String line) {
-        if (line.startsWith(END_TEMPLATE)) {
-            endSection();
-            beginSection(false);
+        Section section = Section.fromLine(line);
+        if (section == null) {
+            if (current != Section.NO_TEMPLATE) {
+                currentSection += line;
+                currentSection += "\n";
+            }
         }
-        else if (line.startsWith(BEGIN_TEMPLATE)) {
-            endSection();
-            beginSection(true);
-        }
-        else {
-            currentSection += line;
-            currentSection += "\n";
+        else if (section != current) {
+            beginSection(section);
         }
     }
 

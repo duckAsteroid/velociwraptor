@@ -106,6 +106,7 @@ public class Main {
         Option noColor = Option.builder(opt(NO_COLOR)).longOpt("no-color")
                 .desc("No color in console")
                 .build();
+        options.addOption(noColor);
 
         OptionGroup template = new OptionGroup();
         template.setRequired(true);
@@ -275,8 +276,10 @@ public class Main {
                 }
             }
         }
-        catch (IOException | ParseException e) {
+        catch(ParseException e) {
             doHelp(options);
+        }
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

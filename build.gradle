@@ -32,7 +32,7 @@ dependencies {
     // runtime JSON Lib
     runtime 'org.glassfish:javax.json:1.0.4'
     // no-op logging for runtime
-    runtimeOnly group: 'org.slf4j', name: 'slf4j-nop', version: '1.7.25'
+    runtime 'ch.qos.logback:logback-classic:1.2.3'
     
     
     // test dependencies...
@@ -42,7 +42,7 @@ dependencies {
     // min web server for tests
     testCompile 'com.sparkjava:spark-core:2.7.2'
     // logging
-    testRuntime 'ch.qos.logback:logback-classic:1.2.3'
+    runtime 'ch.qos.logback:logback-classic:1.2.3'
 }
 
 // generate version number resource
