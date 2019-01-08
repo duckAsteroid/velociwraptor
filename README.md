@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FduckAsteroid%2Fvelociwraptor.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FduckAsteroid%2Fvelociwraptor?ref=badge_shield)
+
 velociwraptor
 ===========
 A project templating library based on the ideas in https://github.com/tmrts/boilr
@@ -117,3 +119,7 @@ Download
 -----------
 
 You can grab an executable installer from the releases link above.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FduckAsteroid%2Fvelociwraptor.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FduckAsteroid%2Fvelociwraptor?ref=badge_large)
