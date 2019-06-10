@@ -1,3 +1,5 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/duckAsteroid/velociwraptor/badge.svg?targetFile=build.gradle)](https://snyk.io/test/github/duckAsteroid/velociwraptor?targetFile=build.gradle)
+
 velociwraptor
 ===========
 A project templating library based on the ideas in https://github.com/tmrts/boilr
