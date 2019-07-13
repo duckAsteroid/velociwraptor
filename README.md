@@ -1,4 +1,6 @@
+
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FduckAsteroid%2Fvelociwraptor.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FduckAsteroid%2Fvelociwraptor?ref=badge_shield)
+[![Known Vulnerabilities](https://snyk.io/test/github/duckAsteroid/velociwraptor/badge.svg?targetFile=build.gradle)](https://snyk.io/test/github/duckAsteroid/velociwraptor?targetFile=build.gradle)
 
 velociwraptor
 ===========
