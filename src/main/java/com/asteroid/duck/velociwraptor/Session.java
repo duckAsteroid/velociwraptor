@@ -101,25 +101,42 @@ public class Session {
     private void applyTemplate(File parent, com.asteroid.duck.velociwraptor.template.File file, TemplateData model) {
         // read template
         try {
-            final String rawTemplateFileName = file.rawName();
+            String rawTemplateFileName = file.rawName();
+            boolean isTemplate = true;
+            // is this file to be ignored?
+            if (rawTemplateFileName.startsWith("#")) {
+                // chop off the #
+                rawTemplateFileName = rawTemplateFileName.substring(1);
+                // it's treated as a template if it did not start ##
+                if (!rawTemplateFileName.startsWith("#")) {
+                    // i.e. original template filename was not ##blah
+                    // copy raw do not template content
+                    isTemplate = false;
+                }
+            }
             final String filename = convertRawName(rawTemplateFileName, model);
             // only bother to create and populate if filename is valid
             if (isValid(filename)) {
                 File newFile = new File(parent, filename);
                 // if it does not already exist
                 if (!newFile.exists()) {
-                    // read template sections and process
-                    List<TemplateSection> template = SectionParser.parse(file.rawContent());
-                    for(TemplateSection section : template) {
-                        String newContent;
-                        if (section.isTemplate()) {
-                             newContent = engine.transform(section.content(), model);
+                    if (isTemplate) {
+                        // read template sections and process
+                        List<TemplateSection> template = SectionParser.parse(file.rawContent());
+                        for (TemplateSection section : template) {
+                            String newContent;
+                            if (section.isTemplate()) {
+                                newContent = engine.transform(section.content(), model);
+                            } else {
+                                newContent = section.content();
+                            }
+                            // append each section
+                            FileUtils.write(newFile, newContent, Charset.defaultCharset(), true);
                         }
-                        else {
-                            newContent = section.content();
-                        }
-                        // append each section
-                        FileUtils.write(newFile, newContent, Charset.defaultCharset(), true);
+                    }
+                    else {
+                        // just copy raw content
+                        FileUtils.copyInputStreamToFile(file.rawContent(), newFile);
                     }
                 } else {
                     LOG.warn(newFile.getCanonicalPath() + " already exists, skipping in template");

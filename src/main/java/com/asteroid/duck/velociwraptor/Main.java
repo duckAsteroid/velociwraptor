@@ -232,6 +232,9 @@ public class Main {
                     // e.g. duckAsteroid/velociwraptor/templateRoot
                     // https://github.com/duckAsteroid/velociwraptor/archive/template.zip
                     final String[] githubCoords = commandLine.getOptionValue(GITHUB).split("\\/");
+                    if (githubCoords.length < 2) {
+                        throw new ParseException("Incorrect format for github repo co-ords");
+                    }
                     final String owner = githubCoords[0];
                     final String repository = githubCoords[1];
                     final String branch = (githubCoords.length > 1) ? githubCoords[2] : "master";

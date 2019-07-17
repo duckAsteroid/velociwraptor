@@ -88,6 +88,16 @@ public class MainTest {
     }
 
     @Test
+    public void githubPartialTest() throws IOException {
+        File output = temporaryFolder.newFolder("github-partial-test");
+        runMain("-q",
+                "-g", "duckAsteroid/velociwraptor/template",
+                "-o", output.getAbsolutePath());
+
+        assertStandardTemplateApplied(output);
+    }
+
+    @Test
     public void mavenTest() throws IOException {
         final String groupId = "duckAsteroid";
         final String artifactId = "velociwraptor-test";

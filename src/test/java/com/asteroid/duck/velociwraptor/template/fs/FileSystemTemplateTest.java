@@ -37,6 +37,8 @@ public class FileSystemTemplateTest {
         folder.mkdirs();
         FileUtils.write(new File(folder, "test.txt"), "This is just\na ${Name}.\nDo not be alarmed!", StandardCharsets.UTF_8);
         FileUtils.write(new File(folder,"test2.txt"), "#no-template\nNOT INCLUDED!!\n\n#end-template ignored comment\nThis is also just a ${Name}!", StandardCharsets.UTF_8);
+        FileUtils.write(new File(folder, "#some.bin"), "#no-template This is treated as \n#begin-template\nbinary data! ${no processing} is done!!", StandardCharsets.UTF_8);
+        FileUtils.write(new File(folder, "##some.bin"), "#end-template\nThis is ${Name} treated as \n#begin-template\ntemplate data! ${Name} is done!!", StandardCharsets.UTF_8);
         FileUtils.write(new File(folder, "${if NotDefined}should-not-appear.txt${end}"), "This is - Should not happen", StandardCharsets.UTF_8);
         File sub = new File(folder, "sub");
         sub.mkdirs();
@@ -60,7 +62,7 @@ public class FileSystemTemplateTest {
 
         List<com.asteroid.duck.velociwraptor.template.File> files = directory.childFiles().collect(Collectors.toList());
         assertNotNull(files);
-        assertEquals(3, files.size());
+        assertEquals(5, files.size());
         for (com.asteroid.duck.velociwraptor.template.File file : files) {
             String content = IOUtils.toString(file.rawContent(), StandardCharsets.UTF_8);
             assertTrue(content.contains("This is"));
@@ -92,8 +94,25 @@ public class FileSystemTemplateTest {
         assertFalse(Arrays.asList(output.list()).contains("should-not-appear.txt"));
         assertFalse(Arrays.asList(output.list()).contains("no-folder"));
 
-        String content = FileUtils.readFileToString(new File(output, "test2.txt"), StandardCharsets.UTF_8);
+
+        // normal template processing
+        File test2 = new File(output, "test2.txt");
+        assertTrue(test2.exists());
+        String content = FileUtils.readFileToString(test2, StandardCharsets.UTF_8);
         assertTrue(content.contains("${Name}"));
         assertFalse(content.contains("NOT INCLUDED"));
+
+        // check that the binary file was not processed
+        File binary = new File(output, "some.bin");
+        assertTrue(binary.exists());
+        assertTrue(FileUtils.readFileToString(binary, StandardCharsets.UTF_8).contains("${no processing}"));
+
+        // this file gets a # name and is processed
+        File notBinary = new File(output, "#some.bin");
+        assertTrue(notBinary.exists());
+        String notBinaryContent = FileUtils.readFileToString(notBinary, StandardCharsets.UTF_8);
+        assertTrue(notBinaryContent.contains("Test is done!!"));
+
+
     }
 }
