@@ -6,6 +6,7 @@ DefaultDirName={commonpf}\velociwraptor
 DefaultGroupName=Velociwraptor
 SourceDir=..\..\..\
 SetupIconFile=icons\icon.ico
+WizardSmallImageFile=icons\icon55.bmp
 WizardImageStretch=yes
 WizardImageFile=icons\wizard.bmp
 Compression=lzma2
