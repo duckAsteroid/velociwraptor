@@ -2,7 +2,7 @@
 AppId=Velocipwraptor
 AppName=velociwraptor
 AppVersion=0.0.3
-DefaultDirName={pf}\velociwraptor
+DefaultDirName={commonpf}\velociwraptor
 DefaultGroupName=Velociwraptor
 SourceDir=..\..\..\
 SetupIconFile=icons\icon.ico

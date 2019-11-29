@@ -94,7 +94,7 @@ task innoSetup (type: Exec){
     description "Creates an installer using InnoSetup"
     group "distribution"
     workingDir 'src/main/inno-setup'
-    commandLine "c:\\Program Files (x86)\\Inno Setup 5\\iscc.exe", 'velociwraptor.iss'
+    commandLine "c:\\Program Files (x86)\\Inno Setup 6\\iscc.exe", 'velociwraptor.iss'
 }
 
 innoSetup.dependsOn extractDistribution
