@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.asteroid.duck'
-version = '0.0.2'
+version = '0.0.3'
 
 apply plugin: 'java'
 apply plugin: 'application'
@@ -86,7 +86,7 @@ task createTemplate(type: Zip) {
 task extractDistribution(type: Copy) { 
     description 'Extracts the distribution ZIP into a temp dir; ready for InnoSetup to consume'
     group 'distribution'
-    from(zipTree("${buildDir}/distributions/velociwraptor-0.0.1.zip"))
+    from(zipTree("${buildDir}/distributions/velociwraptor-${project.version}.zip"))
     into "${buildDir}/distributions/"
 }
 

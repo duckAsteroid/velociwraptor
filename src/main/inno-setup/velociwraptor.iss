@@ -1,7 +1,7 @@
 [Setup]
 AppId=Velocipwraptor
 AppName=velociwraptor
-AppVersion=0.0.1
+AppVersion=0.0.3
 DefaultDirName={pf}\velociwraptor
 DefaultGroupName=Velociwraptor
 SourceDir=..\..\..\
@@ -11,12 +11,12 @@ WizardImageFile=icons\wizard.bmp
 Compression=lzma2
 SolidCompression=yes
 OutputDir=build\distributions
-OutputBaseFilename=velociwraptor-setup
+OutputBaseFilename=velociwraptor-0.0.3-setup
 ChangesEnvironment=yes
 
 [Files]
-Source: "build\distributions\velociwraptor-0.0.1\bin\*.*"; DestDir: "{app}\bin"
-Source: "build\distributions\velociwraptor-0.0.1\lib\*.*"; DestDir: "{app}\lib"
+Source: "build\distributions\velociwraptor-0.0.3\bin\*.*"; DestDir: "{app}\bin"
+Source: "build\distributions\velociwraptor-0.0.3\lib\*.*"; DestDir: "{app}\lib"
 
 [Registry]
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}\bin"

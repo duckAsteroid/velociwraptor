@@ -3,6 +3,7 @@
   "Description": "An example project",
   "Org": "com.asteroid.duck",
   "Version": "1.0.0",
+  "GradleVersion": "!https://services.gradle.org/versions/current#version",
   "Author": "Chris Senior",
   "Year": 2018,
   "Fraction": 3.14,

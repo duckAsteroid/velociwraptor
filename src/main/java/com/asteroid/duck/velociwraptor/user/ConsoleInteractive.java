@@ -7,7 +7,7 @@ import org.fusesource.jansi.AnsiPrintStream;
 import javax.json.JsonArray;
 import javax.json.JsonString;
 import javax.json.JsonValue;
-import javax.xml.ws.WebServiceException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Scanner;
 
@@ -119,7 +119,7 @@ public class ConsoleInteractive extends UserInteractive {
     }
 
     @Override
-    public void close() throws WebServiceException {
+    public void close() throws IOException {
         if (!noColors) {
             AnsiConsole.systemUninstall();
         }

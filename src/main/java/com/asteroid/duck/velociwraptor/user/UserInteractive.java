@@ -2,6 +2,7 @@ package com.asteroid.duck.velociwraptor.user;
 
 import com.asteroid.duck.velociwraptor.model.JsonConverter;
 import com.asteroid.duck.velociwraptor.model.ValueAdapter;
+import com.asteroid.duck.velociwraptor.util.FakeJsonString;
 
 import javax.json.*;
 import java.io.Closeable;
@@ -49,7 +50,7 @@ public abstract class UserInteractive implements ValueAdapter, Closeable {
     }
 
     private JsonValue asJsonString(String value) {
-        return Json.createArrayBuilder().add(value).build().get(0);
+        return new FakeJsonString(value);
     }
 
 
