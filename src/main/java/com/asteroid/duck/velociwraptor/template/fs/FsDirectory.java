@@ -28,13 +28,13 @@ class FsDirectory implements Directory {
     public Stream<File> childFiles() throws IOException {
         return Files.list(path)
                 .filter(Files::isRegularFile)
-                .map(child -> new FsFile(child));
+                .map(FsFile::new);
     }
 
     @Override
     public Stream<Directory> childDirs() throws IOException {
         return Files.list(path)
                 .filter(Files::isDirectory)
-                .map(child -> new FsDirectory(child) );
+                .map(FsDirectory::new);
     }
 }

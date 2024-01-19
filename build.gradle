@@ -1,48 +1,50 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '4.0.3'
+    id 'com.github.ben-manes.versions' version '0.46.0'
+    id 'java'
+    id 'application'
 }
 
 group = 'com.asteroid.duck'
-version = '0.0.3'
-
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'com.github.johnrengelman.shadow'
+version = '0.0.4'
 
 mainClassName = 'com.asteroid.duck.velociwraptor.Main'
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
     // JMTE is our template engine
-    compile group: 'com.floreysoft', name: 'jmte', version: '5.0.0'
+    implementation group: 'com.floreysoft', name: 'jmte', version: '7.0.2'
     // JSON API for parsing project.json
-    compile 'javax.json:javax.json-api:1.0'
+    implementation 'javax.json:javax.json-api:1.1.4'
     // JANSI makes the interactive console pretty colours
-    compile 'org.fusesource.jansi:jansi:1.17.1'
+    implementation 'org.fusesource.jansi:jansi:2.4.0'
     // download, copy files etc.
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
     // command line parser
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.5.0'
     // logging
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.6'
     // runtime JSON Lib
-    runtime 'org.glassfish:javax.json:1.0.4'
-    // no-op logging for runtime
-    runtime 'ch.qos.logback:logback-classic:1.2.3'
-    
-    
+    implementation 'org.glassfish:javax.json:1.1.4'
+    // logging for runtime
+    implementation 'ch.qos.logback:logback-classic:1.4.5'
+
+
     // test dependencies...
-    testCompile 'junit:junit:4.11'
-    testCompile 'org.mockito:mockito-all:1.10.19'
-    
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-all:2.0.2-beta'
+
     // min web server for tests
-    testCompile 'com.sparkjava:spark-core:2.7.2'
-    // logging
-    runtime 'ch.qos.logback:logback-classic:1.2.3'
+    testImplementation 'com.sparkjava:spark-core:2.9.4'
+
 }
 
 // generate version number resource
@@ -63,7 +65,7 @@ task downloadTemplate {
         def jar = new File(buildDir, "tmp/template.zip")
         jar.withOutputStream {
             out -> new URL("https://github.com/duckAsteroid/velociwraptor/archive/template.zip").withInputStream {
-                from -> out << from 
+                from -> out << from
             }
         }
     }
@@ -78,12 +80,12 @@ task copyAndRenameZip(type: Copy) {
 task createTemplate(type: Zip) {
     description "Modifies the downloaded ZIP into a JAR"
     group "verification"
-    destinationDir = file("${projectDir}/src/test/resources/com/asteroid/duck/velociwraptor")
-    archiveName = "template.jar"
+    destinationDirectory = file("${projectDir}/src/test/resources/com/asteroid/duck/velociwraptor")
+    archiveFileName = "template.jar"
     from "${buildDir}/explodedZip/velociwraptor-template/"
 }
 
-task extractDistribution(type: Copy) { 
+task extractDistribution(type: Copy) {
     description 'Extracts the distribution ZIP into a temp dir; ready for InnoSetup to consume'
     group 'distribution'
     from(zipTree("${buildDir}/distributions/velociwraptor-${project.version}.zip"))

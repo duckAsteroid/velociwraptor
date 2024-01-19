@@ -1,5 +1,6 @@
 package com.asteroid.duck.velociwraptor;
 
+import com.asteroid.duck.velociwraptor.model.JavaPackageRenderer;
 import com.asteroid.duck.velociwraptor.model.JsonConverter;
 import com.asteroid.duck.velociwraptor.model.TemplateData;
 import com.asteroid.duck.velociwraptor.template.Directory;
@@ -60,6 +61,8 @@ public class Session {
         this.targetDirectory = targetDirectory;
         // special renderer for JSON objects
         engine.registerRenderer(JsonValue.class, new JsonConverter());
+        // special renderer for Java package names
+        engine.registerNamedRenderer(new JavaPackageRenderer());
     }
 
     public void run() throws IOException {
@@ -75,9 +78,9 @@ public class Session {
 
     private void applyTemplateDirectory(File parent, Directory directory, TemplateData model) {
         try {
-            String folderName = convertRawName(directory.rawName(), model);
+            final String folderName = convertRawName(directory.rawName(), model);
             if (isValid(folderName)) {
-                File newDirectory = new File(parent, convertRawName(directory.rawName(), model));
+                File newDirectory = new File(parent, folderName);
                 if (!newDirectory.exists()) {
                     newDirectory.mkdir();
                 }

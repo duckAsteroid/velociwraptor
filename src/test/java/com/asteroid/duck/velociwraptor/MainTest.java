@@ -111,6 +111,8 @@ public class MainTest {
             return bytes;
         }));
 
+        Spark.awaitInitialization();
+
         File output = temporaryFolder.newFolder("maven-test");
 
         runMain("-q", "-c",

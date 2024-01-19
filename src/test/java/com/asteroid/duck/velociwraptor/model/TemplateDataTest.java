@@ -20,7 +20,7 @@ public class TemplateDataTest {
         }
 
         final String KEY = "Test-Secret-Key-Velociwraptor";
-        final Object VALUE = new Integer(1664);
+        final Object VALUE = 1664;
         Map<String, Object> delegateData = Collections.singletonMap(KEY, VALUE);
         TemplateData<String, Object> delegate = TemplateData.wrap(delegateData);
         environment = TemplateData.systemEnvironment(delegate);
