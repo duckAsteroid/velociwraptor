@@ -15,9 +15,8 @@ public class JavaPackageRenderer implements NamedRenderer {
 
     @Override
     public String render(Object o, String format, Locale locale, Map<String, Object> model) {
-        if(o != null && o instanceof String) {
-            String s = (String)o;
-            return s.replace(".", File.pathSeparator);
+        if(o != null && o instanceof String s) {
+	        return s.replace(".", File.pathSeparator);
         }
         return null;
     }

@@ -46,7 +46,7 @@ public class JsonTemplateData extends TemplateData<String, JsonValue> {
 
         // ask adapter for another value...
         String promptKey = prefix() + key;
-        if (result != null && result instanceof JsonValue) {
+        if (result instanceof JsonValue) {
             result = valueAdapter.get(promptKey, (JsonValue) result);
         }
 

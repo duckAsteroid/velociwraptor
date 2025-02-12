@@ -1,11 +1,11 @@
 plugins {
-    id 'com.github.ben-manes.versions' version '0.46.0'
+    id 'com.github.ben-manes.versions' version '0.52.0'
     id 'java'
     id 'application'
 }
 
 group = 'com.asteroid.duck'
-version = '0.0.4'
+version = '1.0.0'
 
 mainClassName = 'com.asteroid.duck.velociwraptor.Main'
 
@@ -21,21 +21,22 @@ repositories {
 
 dependencies {
     // JMTE is our template engine
-    implementation group: 'com.floreysoft', name: 'jmte', version: '7.0.2'
+    implementation group: 'com.floreysoft', name: 'jmte', version: '7.0.3'
     // JSON API for parsing project.json
     implementation 'javax.json:javax.json-api:1.1.4'
     // JANSI makes the interactive console pretty colours
-    implementation 'org.fusesource.jansi:jansi:2.4.0'
+    implementation 'org.fusesource.jansi:jansi:2.4.1'
     // download, copy files etc.
-    implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.18.0'
     // command line parser
-    implementation group: 'commons-cli', name: 'commons-cli', version: '1.5.0'
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.9.0'
+    implementation 'info.picocli:picocli:4.7.6'
     // logging
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.6'
     // runtime JSON Lib
     implementation 'org.glassfish:javax.json:1.1.4'
     // logging for runtime
-    implementation 'ch.qos.logback:logback-classic:1.4.5'
+    implementation 'ch.qos.logback:logback-classic:1.5.16'
 
 
     // test dependencies...
@@ -43,7 +44,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-all:2.0.2-beta'
 
     // min web server for tests
-    testImplementation 'com.sparkjava:spark-core:2.9.4'
+    testImplementation 'io.javalin:javalin:6.4.0'
 
 }
 

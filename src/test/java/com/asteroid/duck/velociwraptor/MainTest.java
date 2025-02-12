@@ -1,17 +1,16 @@
 package com.asteroid.duck.velociwraptor;
 
+import io.javalin.Javalin;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import spark.Spark;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import static com.asteroid.duck.velociwraptor.AssertFile.assertStandardTemplateApplied;
 import static org.junit.Assert.assertEquals;
@@ -105,13 +104,11 @@ public class MainTest {
         final int port = 12789;
         InputStream jarInput = MainTest.class.getResourceAsStream("template.jar");
         byte[] bytes = IOUtils.toByteArray(jarInput);
-        Spark.port(port);
-        Spark.get("/maven2/"+ groupId + "/" + artifactId +"/" + version + "/" + artifactId + "-"+version +".jar", ((request, response) -> {
-            response.type("application/java-archive");
-            return bytes;
-        }));
-
-        Spark.awaitInitialization();
+        Javalin webServer = Javalin.create().start(port);
+        webServer.get("/maven2/"+ groupId + "/" + artifactId +"/" + version + "/" + artifactId + "-"+version +".jar", (ctx) -> {
+            ctx.contentType("application/java-archive");
+            ctx.result( bytes);
+        });
 
         File output = temporaryFolder.newFolder("maven-test");
 
@@ -120,7 +117,7 @@ public class MainTest {
                 "-m", groupId+":"+artifactId+":"+version,
                 "-o", output.getAbsolutePath());
 
-        Spark.stop();
+        webServer.stop();
 
         assertStandardTemplateApplied(output);
     }

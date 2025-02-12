@@ -2,8 +2,8 @@ package com.asteroid.duck.velociwraptor.model;
 
 import com.asteroid.duck.velociwraptor.user.UserInteractive;
 import com.asteroid.duck.velociwraptor.util.FakeJsonString;
+import io.javalin.Javalin;
 import org.junit.Test;
-import spark.Spark;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -32,20 +32,16 @@ public class JsonTemplateDataTest {
     @Test
     public void get() throws InterruptedException {
         final String EXPECTED_VERSION = "8.0.1";
-        Spark.port(12897);
-        Spark.get("/current#version", ((request, response) -> {
-            return EXPECTED_VERSION;
-        }));
-
-        Spark.awaitInitialization();
+        Javalin webServer = Javalin.create(cfg -> cfg.showJavalinBanner = false).start(12897);
+        webServer.get("/current", (ctx) -> {
+            ctx.result( "{\"version\": \""+EXPECTED_VERSION+"\"}");
+        });
 
         JsonObject test = parseResource(TEST_FILE);
         JsonTemplateData subject = new JsonTemplateData(test, UserInteractive.nullInteractive());
         assertEquals(new FakeJsonString("Chris Senior"), subject.get("Author"));
         assertEquals(new FakeJsonString(EXPECTED_VERSION), subject.get("GradleVersion"));
 
-        System.out.println("HIT ME");
-        Thread.sleep(3000000);
-        Spark.stop();
+        webServer.stop();
     }
 }
