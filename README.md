@@ -76,7 +76,7 @@ more template variables.
 
 Next Steps
 ----
-Read about how [templates](https://github.com/duckAsteroid/velociwraptor/wiki/Templates) behave or the 
+Read about how [templates](https://duckasteroid.github.io/velociwraptor/templates.html) behave or the 
 [JMTE](https://github.com/duckAsteroid/jmte/wiki/LanguageSpecification) syntax used to define them.
 
 Usage
