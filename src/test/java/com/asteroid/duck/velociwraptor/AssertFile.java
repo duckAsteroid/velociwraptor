@@ -1,5 +1,6 @@
 package com.asteroid.duck.velociwraptor;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -62,5 +63,11 @@ public class AssertFile {
         File injected = new File(folder, "injected.txt");
         String content = FileUtils.readFileToString(injected, StandardCharsets.UTF_8);
         assertThat(content, containsString("Brick"));
+    }
+
+    public static void assertJsonString(String expected, JsonNode actual) {
+        assertTrue(actual.isTextual());
+        var text = actual.asText();
+        assertEquals(expected, text);
     }
 }

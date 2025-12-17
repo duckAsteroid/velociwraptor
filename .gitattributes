@@ -1,0 +1,2 @@
+# the bin templateFiles in the test folder should not be messed with
+*.bin binary

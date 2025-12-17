@@ -1,11 +1,10 @@
 package com.asteroid.duck.velociwraptor;
 
-import com.asteroid.duck.velociwraptor.model.JsonTemplateData;
-import com.asteroid.duck.velociwraptor.model.TemplateData;
-import com.asteroid.duck.velociwraptor.template.Directory;
+import com.asteroid.duck.velociwraptor.model.vars.TemplateDataModel;
+import com.asteroid.duck.velociwraptor.template.TemplateDirectory;
 import com.asteroid.duck.velociwraptor.template.TemplateRoot;
 import com.asteroid.duck.velociwraptor.template.fs.FileSystemTemplateRoot;
-import com.asteroid.duck.velociwraptor.user.UserInteractive;
+import com.asteroid.duck.velociwraptor.user.NullInteractive;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -18,9 +17,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static com.asteroid.duck.velociwraptor.AssertFile.assertStandardTemplateApplied;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SessionTest {
     public static final String EXPECTED_CONTENT = "This was here";
@@ -31,11 +32,11 @@ public class SessionTest {
 
     @Before
     public void setUp() throws Exception {
-        UserInteractive interactive = UserInteractive.nullInteractive();
+        NullInteractive interactive = new NullInteractive();
         Path zipPath = Paths.get(SessionTest.class.getResource("template.jar").toURI());
         TemplateRoot templateRoot = FileSystemTemplateRoot.fromZip(zipPath);
-        Directory root = templateRoot.rootDirectory();
-        TemplateData data = new JsonTemplateData(templateRoot.projectSettings(), interactive);
+        TemplateDirectory root = templateRoot.rootDirectory();
+        TemplateDataModel data = new TemplateDataModel(List.of(templateRoot.projectSettings()), interactive);
         target = temporaryFolder.newFolder("session-test");
         subject = new Session(root, data, target);
     }

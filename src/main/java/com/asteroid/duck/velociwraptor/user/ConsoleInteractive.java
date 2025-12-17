@@ -1,20 +1,21 @@
 package com.asteroid.duck.velociwraptor.user;
 
+import com.asteroid.duck.velociwraptor.model.vars.Value;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
-import org.fusesource.jansi.AnsiPrintStream;
 
-import javax.json.JsonArray;
-import javax.json.JsonString;
-import javax.json.JsonValue;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 import static org.fusesource.jansi.Ansi.Color.BLUE;
 import static org.fusesource.jansi.Ansi.ansi;
 
-public class ConsoleInteractive extends UserInteractive {
+public class ConsoleInteractive implements UserInteractive {
     private final Scanner input;
     private final PrintStream output;
     private final boolean noColors;
@@ -34,7 +35,7 @@ public class ConsoleInteractive extends UserInteractive {
     }
 
 
-    @Override
+
     public Boolean askBooleanOption(String key, boolean current) {
         // print the options
         output.println(ansi().fg(BLUE) + "[?] " + ansi().reset() + "Please choose an option for \""+key+"\":");
@@ -60,18 +61,18 @@ public class ConsoleInteractive extends UserInteractive {
      * Ask the user which of the given options to select from
      * @return the selected option
      */
-    public JsonValue askOption(String key, JsonArray options) {
+    public JsonNode askOption(String key, JsonNode options) {
         if (options == null) {
             throw new IllegalArgumentException(key +": options cannot be null");
         }
         // print the options
         output.println(ansi().fg(BLUE) + "[?] " + ansi().reset() + "Please choose an option for \""+key+"\":");
         for(int i = 0; i < options.size(); i++) {
-            JsonValue value = options.get(i);
-            if (!(value instanceof JsonString)) {
+            JsonNode value = options.get(i);
+            if (!value.isTextual()) {
                 throw new IllegalArgumentException("Unexpected array member: "+value);
             }
-            output.println("    " + (i + 1) + " - " + value);
+            output.println("    " + (i + 1) + " - " + value.asText());
         }
         // read the selection
         Integer selection = null;
@@ -116,6 +117,11 @@ public class ConsoleInteractive extends UserInteractive {
         } while( line == null);
 
         return line;
+    }
+
+    @Override
+    public Optional<Value> resolve(String key, Stream<Value> values) {
+        return values.findFirst();
     }
 
     @Override

@@ -1,19 +1,34 @@
 plugins {
-    id 'com.github.ben-manes.versions' version '0.52.0'
+    id 'com.github.ben-manes.versions' version '0.53.0'
     id 'java'
     id 'application'
+    id 'org.graalvm.buildtools.native' version '0.11.3'
 }
 
 group = 'com.asteroid.duck'
 version = '1.0.0'
 
-mainClassName = 'com.asteroid.duck.velociwraptor.Main'
+application {
+    mainClass = 'com.asteroid.duck.velociwraptor.Main'
+}
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
+
+// In your build.gradle (Groovy DSL)
+tasks.named('test', Test) {
+    // This line is often the culprit. Set it to false or remove it.
+    failFast = false
+
+    // Ensure all tests run, even if some tasks fail.
+    ignoreFailures = true
+
+    // OR just remove the failFast line if it exists.
+}
+
 
 repositories {
     mavenCentral()
@@ -22,21 +37,20 @@ repositories {
 dependencies {
     // JMTE is our template engine
     implementation group: 'com.floreysoft', name: 'jmte', version: '7.0.3'
-    // JSON API for parsing project.json
-    implementation 'javax.json:javax.json-api:1.1.4'
+    // Jackson for parsing project json
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+
     // JANSI makes the interactive console pretty colours
-    implementation 'org.fusesource.jansi:jansi:2.4.1'
+    implementation 'org.fusesource.jansi:jansi:2.4.2'
     // download, copy files etc.
-    implementation group: 'commons-io', name: 'commons-io', version: '2.18.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.21.0'
     // command line parser
-    implementation group: 'commons-cli', name: 'commons-cli', version: '1.9.0'
-    implementation 'info.picocli:picocli:4.7.6'
+    implementation 'info.picocli:picocli:4.7.7'
     // logging
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.6'
-    // runtime JSON Lib
-    implementation 'org.glassfish:javax.json:1.1.4'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.1.0-alpha1'
+
     // logging for runtime
-    implementation 'ch.qos.logback:logback-classic:1.5.16'
+    implementation 'ch.qos.logback:logback-classic:1.5.21'
 
 
     // test dependencies...
@@ -44,13 +58,13 @@ dependencies {
     testImplementation 'org.mockito:mockito-all:2.0.2-beta'
 
     // min web server for tests
-    testImplementation 'io.javalin:javalin:6.4.0'
+    testImplementation 'io.javalin:javalin:6.7.0'
 
 }
 
 // generate version number resource
 ext.genOutputDir = file("$buildDir/generated-resources")
-task generatePropInfo {
+tasks.register('generatePropInfo') {
     ext.outputFile = file("$genOutputDir/project-info.properties")
     outputs.file(outputFile)
     doLast {
@@ -59,46 +73,30 @@ task generatePropInfo {
 }
 sourceSets.main.output.dir genOutputDir, builtBy: generatePropInfo
 
-task downloadTemplate {
+tasks.register('downloadTemplate') {
     description "Downloads the latest version of the template from github"
     group "verification"
     doLast {
         def jar = new File(buildDir, "tmp/template.zip")
         jar.withOutputStream {
-            out -> new URL("https://github.com/duckAsteroid/velociwraptor/archive/template.zip").withInputStream {
-                from -> out << from
-            }
+            out ->
+                new URL("https://github.com/duckAsteroid/velociwraptor/archive/template.zip").withInputStream {
+                    from -> out << from
+                }
         }
     }
 }
 
-task copyAndRenameZip(type: Copy) {
+tasks.register('copyAndRenameZip', Copy) {
     group "verification"
     from zipTree("${buildDir}/tmp/template.zip")
     into "${buildDir}/explodedZip/"
 }
 
-task createTemplate(type: Zip) {
+tasks.register('createTemplate', Zip) {
     description "Modifies the downloaded ZIP into a JAR"
     group "verification"
     destinationDirectory = file("${projectDir}/src/test/resources/com/asteroid/duck/velociwraptor")
     archiveFileName = "template.jar"
     from "${buildDir}/explodedZip/velociwraptor-template/"
 }
-
-task extractDistribution(type: Copy) {
-    description 'Extracts the distribution ZIP into a temp dir; ready for InnoSetup to consume'
-    group 'distribution'
-    from(zipTree("${buildDir}/distributions/velociwraptor-${project.version}.zip"))
-    into "${buildDir}/distributions/"
-}
-
-task innoSetup (type: Exec){
-    description "Creates an installer using InnoSetup"
-    group "distribution"
-    workingDir 'src/main/inno-setup'
-    commandLine "c:\\Program Files (x86)\\Inno Setup 6\\iscc.exe", 'velociwraptor.iss'
-}
-
-innoSetup.dependsOn extractDistribution
-extractDistribution.dependsOn distZip

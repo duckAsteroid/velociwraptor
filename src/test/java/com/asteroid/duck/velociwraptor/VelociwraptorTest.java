@@ -16,22 +16,20 @@ import static com.asteroid.duck.velociwraptor.AssertFile.assertStandardTemplateA
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class MainTest {
+public class VelociwraptorTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    public void runMain(String ... args) {
-        Main.main(args);
+    public void runMain(File cwd, String ... args) {
+        Main.runApplication(cwd, args);
     }
 
     @Test
     public void localOverride() throws IOException {
-        String userDir = System.getProperty("user.dir");
         File template = temporaryFolder.newFolder("template");
         OverrideJsonSessionTest.createBasicTemplate(template);
 
         File json = temporaryFolder.newFolder("json");
-        System.setProperty("user.dir", json.getAbsolutePath());
 
         File oneJson = new File(json, "1.json");
         FileUtils.write(oneJson, "{ \"Name\": \"Override-1\" }", StandardCharsets.UTF_8);
@@ -40,35 +38,35 @@ public class MainTest {
 
         File output = temporaryFolder.newFolder("local");
 
-        runMain("-q",
+        runMain( json,"-q",
                 "-d", template.getAbsolutePath(),
-                "-j", oneJson.getAbsolutePath() + ";"+twoJson.getAbsolutePath(),
+                "-j", "1.json;2.json",
                 "-o", output.getAbsolutePath());
 
         File expectedFile = new File(output, "test.txt");
         assertTrue(expectedFile.exists());
         assertTrue(expectedFile.isFile());
         String content = FileUtils.readFileToString(expectedFile, StandardCharsets.UTF_8);
-        assertEquals("Override-1", content);
+        assertEquals("Override-2", content);
 
         output = temporaryFolder.newFolder("local2");
 
-        runMain("-q",
+        runMain(json,"-q",
                 "-d", template.getAbsolutePath(),
-                "-j", twoJson.getAbsolutePath() + ";"+oneJson.getAbsolutePath(),
+                "-j", "2.json;1.json",
                 "-o", output.getAbsolutePath());
 
         expectedFile = new File(output, "test.txt");
         assertTrue(expectedFile.exists());
         assertTrue(expectedFile.isFile());
         content = FileUtils.readFileToString(expectedFile, StandardCharsets.UTF_8);
-        assertEquals("Override-2", content);
+        assertEquals("Override-1", content);
     }
 
     @Test
     public void remoteZipTest() throws IOException {
         File output = temporaryFolder.newFolder("remote-zip-test");
-        runMain("-q",
+        runMain(temporaryFolder.getRoot(), "-q",
                 "-i", "velociwraptor-template",
                 "-z", "https://github.com/duckAsteroid/velociwraptor/archive/template.zip",
                 "-o", output.getAbsolutePath());
@@ -79,7 +77,7 @@ public class MainTest {
     @Test
     public void githubTest() throws IOException {
         File output = temporaryFolder.newFolder("github-test");
-        runMain("-q",
+        runMain(temporaryFolder.getRoot(),"-q",
                 "-g", "duckAsteroid/velociwraptor/template",
                 "-o", output.getAbsolutePath());
 
@@ -89,7 +87,7 @@ public class MainTest {
     @Test
     public void githubPartialTest() throws IOException {
         File output = temporaryFolder.newFolder("github-partial-test");
-        runMain("-q",
+        runMain(temporaryFolder.getRoot(), "-q",
                 "-g", "duckAsteroid/velociwraptor/template",
                 "-o", output.getAbsolutePath());
 
@@ -102,7 +100,7 @@ public class MainTest {
         final String artifactId = "velociwraptor-test";
         final String version = "0.0.1";
         final int port = 12789;
-        InputStream jarInput = MainTest.class.getResourceAsStream("template.jar");
+        InputStream jarInput = VelociwraptorTest.class.getResourceAsStream("template.jar");
         byte[] bytes = IOUtils.toByteArray(jarInput);
         Javalin webServer = Javalin.create().start(port);
         webServer.get("/maven2/"+ groupId + "/" + artifactId +"/" + version + "/" + artifactId + "-"+version +".jar", (ctx) -> {
@@ -112,7 +110,7 @@ public class MainTest {
 
         File output = temporaryFolder.newFolder("maven-test");
 
-        runMain("-q", "-c",
+        runMain(temporaryFolder.getRoot(), "-q", "-c",
                 "-r", "http://localhost:"+port+"/maven2/",
                 "-m", groupId+":"+artifactId+":"+version,
                 "-o", output.getAbsolutePath());

@@ -1,7 +1,8 @@
 package com.asteroid.duck.velociwraptor.model;
 
-import javax.json.JsonValue;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public interface ValueAdapter {
-    Object get(String key, JsonValue current);
+    Object get(String key, JsonNode current);
 }

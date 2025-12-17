@@ -1,6 +1,7 @@
 package com.asteroid.duck.velociwraptor.template.fs;
 
-import com.asteroid.duck.velociwraptor.template.Directory;
+import com.asteroid.duck.velociwraptor.template.TemplateDirectory;
+import com.asteroid.duck.velociwraptor.template.TemplateFile;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -19,13 +20,13 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
-public class ZipFileSystemTemplateTest {
+public class ZipTemplateFileSystemTemplateTest {
 
     private FileSystemTemplateRoot subject;
 
     @Before
     public void setUp() throws Exception {
-        URL zipUrl = ZipFileSystemTemplateTest.class.getResource("template.zip");
+        URL zipUrl = ZipTemplateFileSystemTemplateTest.class.getResource("template.zip");
         Path path = Paths.get(zipUrl.toURI());
         FileSystem zipFs = FileSystems.newFileSystem(path, getClass().getClassLoader());
         Path root = zipFs.getPath(".");
@@ -38,31 +39,31 @@ public class ZipFileSystemTemplateTest {
 
     @Test
     public void walkFileSystem() throws IOException {
-        Directory directory = subject.rootDirectory();
+        TemplateDirectory templateDirectory = subject.rootDirectory();
         assertNotNull("directory");
-        assertEquals("template", directory.rawName());
+        assertEquals("template", templateDirectory.rawName());
 
-        List<com.asteroid.duck.velociwraptor.template.File> files = directory.childFiles().collect(Collectors.toList());
-        assertNotNull(files);
-        assertEquals(2, files.size());
-        for (com.asteroid.duck.velociwraptor.template.File file : files) {
-            String content = IOUtils.toString(file.rawContent(), StandardCharsets.UTF_8);
+        List<TemplateFile> templateFiles = templateDirectory.childFiles().collect(Collectors.toList());
+        assertNotNull(templateFiles);
+        assertEquals(2, templateFiles.size());
+        for (TemplateFile templateFile : templateFiles) {
+            String content = IOUtils.toString(templateFile.rawContent(), StandardCharsets.UTF_8);
             assertTrue(content.contains("This is"));
         }
 
-        List<Directory> directories = directory.childDirs().collect(Collectors.toList());
+        List<TemplateDirectory> directories = templateDirectory.childDirs().collect(Collectors.toList());
         assertNotNull(directories);
         assertEquals(1, directories.size());
 
-        Directory sub = directories.get(0);
+        TemplateDirectory sub = directories.get(0);
         assertNotNull(sub);
         assertEquals("sub", sub.rawName());
 
         assertEquals(0, sub.childDirs().count());
 
-        com.asteroid.duck.velociwraptor.template.File subFile = sub.childFiles().findFirst().orElseThrow(FileNotFoundException::new);
-        assertEquals("sub-test.txt", subFile.rawName());
-        String content = IOUtils.toString(subFile.rawContent(), StandardCharsets.UTF_8);
+        TemplateFile subTemplateFile = sub.childFiles().findFirst().orElseThrow(FileNotFoundException::new);
+        assertEquals("sub-test.txt", subTemplateFile.rawName());
+        String content = IOUtils.toString(subTemplateFile.rawContent(), StandardCharsets.UTF_8);
         assertEquals("This is in the sub folder.", content);
     }
 }

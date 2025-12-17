@@ -1,14 +1,19 @@
 package com.asteroid.duck.velociwraptor.template.fs;
 
-import com.asteroid.duck.velociwraptor.Main;
-import com.asteroid.duck.velociwraptor.template.Directory;
+import com.asteroid.duck.velociwraptor.Velociwraptor;
+import com.asteroid.duck.velociwraptor.model.vars.JsonValueSource;
+import com.asteroid.duck.velociwraptor.model.vars.ValueProvider;
+import com.asteroid.duck.velociwraptor.model.vars.ValueSource;
+import com.asteroid.duck.velociwraptor.template.TemplateDirectory;
 import com.asteroid.duck.velociwraptor.template.TemplateRoot;
+import com.asteroid.duck.velociwraptor.template.visit.TemplateNodeVisitor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * The class provides a {@link TemplateRoot} view of the resources in a given root {@link Path}.
@@ -18,52 +23,79 @@ import java.nio.file.*;
  * This path can be a local file system directory or a path in a ZipFileSystem.
  */
 public class FileSystemTemplateRoot implements TemplateRoot {
-
+    private interface CleanupAction {
+        void cleanup() throws Exception;
+    }
     /**
      * The root directory containing the actual template
      */
-    private final FsDirectory template;
+    private final FsTemplateDirectory template;
     /**
      * The JSON data from the 'default.json' file
      */
-    private final JsonObject defaultValues;
+    private final JsonValueSource defaultValues;
+
+    private CleanupAction cleanup = null;
+
+    private final static ObjectMapper mapper = new ObjectMapper();
 
     public static TemplateRoot fromZip(Path pathToZip) throws IOException {
         return fromZip(pathToZip, ".");
     }
 
+    @SuppressWarnings("resource") // TemplateRoot is AutoCloseable
     public static TemplateRoot fromZip(Path pathToZip, String root) throws IOException {
-        FileSystem zipFileSystem = FileSystems.newFileSystem(pathToZip, Main.class.getClassLoader());
+        FileSystem zipFileSystem = FileSystems.newFileSystem(pathToZip, Velociwraptor.class.getClassLoader());
         Path zipRoot = zipFileSystem.getPath(root);
-        return new FileSystemTemplateRoot(zipRoot);
+        return new FileSystemTemplateRoot(zipRoot).setCleanup(zipFileSystem::close);
     }
 
     public FileSystemTemplateRoot(Path root) throws IOException {
         Path projectFile = root.resolve("default.json");
         if (Files.exists(projectFile)) {
-            JsonReader reader = Json.createReader(Files.newBufferedReader(projectFile));
-            defaultValues = reader.readObject();
+            var jsonObject = mapper.readTree(Files.newInputStream(projectFile));
+            defaultValues = new JsonValueSource(ValueSource.TEMPLATE, "default.json", jsonObject);
         }
         else {
-            defaultValues = null;
+            defaultValues = new JsonValueSource(ValueSource.TEMPLATE, "default.json", mapper.createObjectNode());
         }
 
         Path templatePath = root.resolve("template");
         if (Files.exists(templatePath)) {
-            this.template = new FsDirectory(templatePath);
+            this.template = new FsTemplateDirectory(templatePath);
         }
         else {
-            this.template = new FsDirectory(root);
+            this.template = new FsTemplateDirectory(root);
         }
     }
 
     @Override
-    public Directory rootDirectory() {
+    public TemplateDirectory rootDirectory() {
         return template;
     }
 
     @Override
-    public JsonObject projectSettings() {
+    public ValueProvider projectSettings() {
         return defaultValues;
+    }
+
+    private TemplateRoot setCleanup(CleanupAction cleanup) {
+        this.cleanup = cleanup;
+        return this;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (cleanup != null) {
+            cleanup.cleanup();
+        }
+    }
+
+    @Override
+    public void accept(TemplateNodeVisitor visitor) {
+        if (visitor != null) {
+            visitor.visitRoot(this);
+            template.accept(visitor);
+        }
     }
 }

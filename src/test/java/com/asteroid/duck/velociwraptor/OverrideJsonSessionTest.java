@@ -1,11 +1,12 @@
 package com.asteroid.duck.velociwraptor;
 
-import com.asteroid.duck.velociwraptor.model.JsonTemplateData;
-import com.asteroid.duck.velociwraptor.model.TemplateData;
-import com.asteroid.duck.velociwraptor.template.Directory;
-import com.asteroid.duck.velociwraptor.template.TemplateRoot;
+import com.asteroid.duck.velociwraptor.model.vars.JsonValueSource;
+import com.asteroid.duck.velociwraptor.model.vars.TemplateDataModel;
+import com.asteroid.duck.velociwraptor.model.vars.ValueSource;
 import com.asteroid.duck.velociwraptor.template.fs.FileSystemTemplateRoot;
-import com.asteroid.duck.velociwraptor.user.UserInteractive;
+import com.asteroid.duck.velociwraptor.user.NullInteractive;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -13,16 +14,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonString;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.List;
 
-import static com.asteroid.duck.velociwraptor.AssertFile.assertStandardTemplateApplied;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -32,8 +28,8 @@ public class OverrideJsonSessionTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     private File target;
     private Session subject;
-    private JsonTemplateData data;
-
+    private TemplateDataModel data;
+    private final ObjectMapper mapper = new ObjectMapper();
     @Before
     public void setUp() throws Exception {
         target = temporaryFolder.newFolder("session-test");
@@ -41,15 +37,18 @@ public class OverrideJsonSessionTest {
 
         createBasicTemplate(template);
 
-        UserInteractive interactive = UserInteractive.nullInteractive();
+        NullInteractive interactive = new NullInteractive();
 
         FileSystemTemplateRoot templateRoot = new FileSystemTemplateRoot(template.toPath());
 
-        JsonObject firstOverride = Json.createObjectBuilder().add("Name", "Override-1").build();
-        JsonTemplateData firstTemplate = new JsonTemplateData(firstOverride, interactive);
-        JsonObject secondOverride = Json.createObjectBuilder().add("Name", "Override-2").build();
-        JsonTemplateData secondTemplate = new JsonTemplateData(null, firstTemplate, secondOverride, interactive);
-        data = new JsonTemplateData(null, secondTemplate, templateRoot.projectSettings(), interactive);
+        var firstOverride = mapper.createObjectNode();
+        firstOverride.put("Name", "Override-1");
+        JsonValueSource firstTemplate = new JsonValueSource(ValueSource.JSON_FILES, "firstOverride", firstOverride);
+        var secondOverride = mapper.createObjectNode();
+        secondOverride.put("Name", "Override-2");
+        JsonValueSource secondTemplate = new JsonValueSource(ValueSource.JSON_FILES, "secondOverride", secondOverride);
+
+        data = new TemplateDataModel(List.of(firstTemplate, secondTemplate, templateRoot.projectSettings()), interactive);
         subject = new Session(templateRoot.rootDirectory(), data, target);
     }
 
@@ -67,8 +66,8 @@ public class OverrideJsonSessionTest {
 
     @Test
     public void dataOverride() {
-        JsonString actual = (JsonString) data.get("Name");
-        assertEquals("Override-1", actual.getString());
+        var actual = data.get("Name");
+        assertEquals("Override-1", actual);
     }
 
     @Test

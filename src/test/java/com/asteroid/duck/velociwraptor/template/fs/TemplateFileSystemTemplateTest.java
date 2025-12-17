@@ -1,9 +1,11 @@
 package com.asteroid.duck.velociwraptor.template.fs;
 
 import com.asteroid.duck.velociwraptor.Session;
-import com.asteroid.duck.velociwraptor.model.JsonTemplateData;
-import com.asteroid.duck.velociwraptor.template.Directory;
-import com.asteroid.duck.velociwraptor.user.UserInteractive;
+
+import com.asteroid.duck.velociwraptor.model.vars.TemplateDataModel;
+import com.asteroid.duck.velociwraptor.template.TemplateDirectory;
+import com.asteroid.duck.velociwraptor.template.TemplateFile;
+import com.asteroid.duck.velociwraptor.user.NullInteractive;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -23,7 +25,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
-public class FileSystemTemplateTest {
+public class TemplateFileSystemTemplateTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -56,39 +58,40 @@ public class FileSystemTemplateTest {
 
     @Test
     public void walkFileSystem() throws IOException {
-        Directory directory = subject.rootDirectory();
+        TemplateDirectory templateDirectory = subject.rootDirectory();
         assertNotNull("directory");
-        assertEquals("template", directory.rawName());
+        assertEquals("template", templateDirectory.rawName());
 
-        List<com.asteroid.duck.velociwraptor.template.File> files = directory.childFiles().collect(Collectors.toList());
-        assertNotNull(files);
-        assertEquals(5, files.size());
-        for (com.asteroid.duck.velociwraptor.template.File file : files) {
-            String content = IOUtils.toString(file.rawContent(), StandardCharsets.UTF_8);
+        List<TemplateFile> templateFiles = templateDirectory.childFiles().collect(Collectors.toList());
+        assertNotNull(templateFiles);
+        assertEquals(5, templateFiles.size());
+        for (TemplateFile templateFile : templateFiles) {
+            String content = IOUtils.toString(templateFile.rawContent(), StandardCharsets.UTF_8);
             assertTrue(content.contains("This is"));
         }
 
-        List<Directory> directories = directory.childDirs().collect(Collectors.toList());
+        List<TemplateDirectory> directories = templateDirectory.childDirs().collect(Collectors.toList());
         assertNotNull(directories);
         assertEquals(2, directories.size());
 
-        Directory sub = directories.get(1);
+        TemplateDirectory sub = directories.get(1);
         assertNotNull(sub);
         assertEquals("sub", sub.rawName());
 
         assertEquals(0, sub.childDirs().count());
 
-        com.asteroid.duck.velociwraptor.template.File subFile = sub.childFiles().findFirst().orElseThrow(FileNotFoundException::new);
-        assertEquals("sub-test.txt", subFile.rawName());
-        String content = IOUtils.toString(subFile.rawContent(), StandardCharsets.UTF_8);
+        TemplateFile subTemplateFile = sub.childFiles().findFirst().orElseThrow(FileNotFoundException::new);
+        assertEquals("sub-test.txt", subTemplateFile.rawName());
+        String content = IOUtils.toString(subTemplateFile.rawContent(), StandardCharsets.UTF_8);
         assertEquals("This is in the sub folder.", content);
     }
 
     @Test
     public void applyFileSystem() throws IOException {
         File output = temporaryFolder.newFolder();
-        JsonTemplateData data = new JsonTemplateData(subject.projectSettings(), UserInteractive.nullInteractive());
-        Session session = new Session(subject.rootDirectory(), data, output);
+        var project = subject.projectSettings();
+        TemplateDataModel model = new TemplateDataModel(List.of(project), new NullInteractive());
+        Session session = new Session(subject.rootDirectory(), model, output);
         session.run();
 
         assertFalse(Arrays.asList(output.list()).contains("should-not-appear.txt"));
